@@ -1,0 +1,317 @@
+@import "tailwindcss";
+
+/* ============================================================================
+ * OpenVibe Design System
+ * ============================================================================
+ *
+ * Dark-mode-first color palette. Warmer than Discord (which leans blue-gray),
+ * closer to Linear's restrained warmth. Built on a warm gray base with a
+ * teal-indigo accent spectrum.
+ *
+ * Palette philosophy:
+ *   - Backgrounds use warm grays (slight amber/brown undertone via low
+ *     saturation at ~250-260deg hue). This prevents the "cold cave" feeling
+ *     of pure blue-grays while staying clearly dark-mode.
+ *   - Primary accent is a bright, saturated indigo-violet that feels energetic
+ *     without being garish. Distinct from Discord's blurple and Slack's plum.
+ *   - Deep Dive accent is a warm amber/gold — the color of going deep,
+ *     discovery, illumination. It contrasts strongly with the cool primary.
+ *   - Text uses pure warm whites stepping down to zinc-tinted grays.
+ *
+ * Naming convention:
+ *   Colors are named semantically (background, foreground, surface, etc.)
+ *   not by color name. This lets us swap palettes without renaming classes.
+ *
+ * Usage:
+ *   bg-background     -> darkest app shell
+ *   bg-sidebar        -> sidebar background
+ *   bg-surface        -> main content area
+ *   bg-elevated       -> cards, modals, popovers, dropdowns
+ *   text-foreground   -> primary text
+ *   text-secondary    -> secondary text
+ *   text-muted        -> muted/tertiary text
+ *   text-disabled     -> disabled text
+ *   border-border     -> subtle borders
+ *   border-divider    -> stronger dividers
+ *   bg-primary        -> primary buttons, active indicators
+ *   bg-dive           -> deep dive accent surfaces
+ *   bg-agent          -> agent message bubbles
+ *   bg-dive-surface   -> deep dive context tint
+ *   bg-resolution     -> resolution/result cards
+ *   bg-codeblock      -> code block backgrounds
+ *
+ * ========================================================================= */
+
+@theme {
+
+  /* --------------------------------------------------------------------------
+   * 1. BACKGROUND LAYERS (4 tiers, darkest to lightest)
+   * --------------------------------------------------------------------------
+   * Hue ~250 (blue-purple leaning), very low chroma, ascending lightness.
+   * The warm feeling comes from keeping saturation minimal — pure grays
+   * with just enough blue to feel intentional, not lifeless.
+   * ------------------------------------------------------------------------ */
+
+  /* App shell — the absolute darkest. Visible behind everything. */
+  --color-background: oklch(0.11 0.01 260);
+
+  /* Sidebar — slightly lighter than app bg so it reads as a surface. */
+  --color-sidebar: oklch(0.13 0.012 260);
+
+  /* Main content area — the primary reading surface. */
+  --color-surface: oklch(0.16 0.012 260);
+
+  /* Elevated surfaces: cards, modals, popovers, dropdowns, tooltips. */
+  --color-elevated: oklch(0.19 0.014 260);
+
+
+  /* --------------------------------------------------------------------------
+   * 2. TEXT HIERARCHY (4 tiers, brightest to dimmest)
+   * --------------------------------------------------------------------------
+   * All text uses oklch for perceptual uniformity. Foreground is near-white
+   * with a barely warm tint. Each step drops ~15-20% perceived lightness.
+   * ------------------------------------------------------------------------ */
+
+  /* Primary text — headings, body text, user messages. */
+  --color-foreground: oklch(0.95 0.005 260);
+
+  /* Secondary text — timestamps, metadata, less important labels. */
+  --color-secondary: oklch(0.72 0.01 260);
+
+  /* Muted text — placeholders, hints, helper text. */
+  --color-muted-foreground: oklch(0.55 0.015 260);
+
+  /* Disabled text — disabled buttons, inactive tabs. */
+  --color-disabled: oklch(0.40 0.015 260);
+
+
+  /* --------------------------------------------------------------------------
+   * 3. ACCENT COLORS
+   * --------------------------------------------------------------------------
+   * Primary: Indigo-violet. Energetic, distinct from Discord's blurple.
+   * Deep Dive: Warm amber/gold. "Illumination" — going deep, discovering.
+   * Status colors: Conventional but tuned for dark backgrounds.
+   * ------------------------------------------------------------------------ */
+
+  /* Primary accent — buttons, links, active states, selection indicators. */
+  --color-primary: oklch(0.65 0.22 275);
+  --color-primary-foreground: oklch(0.98 0.005 260);
+  --color-primary-hover: oklch(0.60 0.24 275);
+  --color-primary-muted: oklch(0.30 0.08 275);
+
+  /* Deep Dive accent — dive buttons, dive context, dive results. */
+  --color-dive: oklch(0.72 0.17 75);
+  --color-dive-foreground: oklch(0.15 0.02 75);
+  --color-dive-hover: oklch(0.67 0.19 75);
+  --color-dive-muted: oklch(0.28 0.06 75);
+
+  /* Success — confirmations, online status, completed states. */
+  --color-success: oklch(0.70 0.18 155);
+  --color-success-foreground: oklch(0.15 0.03 155);
+
+  /* Warning — caution states, approaching limits. */
+  --color-warning: oklch(0.75 0.16 85);
+  --color-warning-foreground: oklch(0.15 0.03 85);
+
+  /* Error/Destructive — errors, delete actions, offline status. */
+  --color-destructive: oklch(0.63 0.22 25);
+  --color-destructive-foreground: oklch(0.98 0.005 25);
+
+  /* Info — informational badges, tips, neutral highlights. */
+  --color-info: oklch(0.68 0.15 230);
+  --color-info-foreground: oklch(0.15 0.03 230);
+
+
+  /* --------------------------------------------------------------------------
+   * 4. BORDERS & SEPARATORS
+   * --------------------------------------------------------------------------
+   * Two tiers: subtle (between related items) and divider (between sections).
+   * Both use the warm gray base at low lightness.
+   * ------------------------------------------------------------------------ */
+
+  /* Subtle border — input outlines, card edges, list item separators. */
+  --color-border: oklch(0.24 0.015 260);
+
+  /* Stronger divider — section breaks, sidebar/content boundary. */
+  --color-divider: oklch(0.30 0.015 260);
+
+
+  /* --------------------------------------------------------------------------
+   * 5. SPECIAL SURFACES
+   * --------------------------------------------------------------------------
+   * Contextual backgrounds for specific UI elements. Each is tuned
+   * to provide enough contrast to be noticeable without being loud.
+   * ------------------------------------------------------------------------ */
+
+  /* Agent message background — subtle cool tint to distinguish from human. */
+  --color-agent: oklch(0.17 0.025 275);
+
+  /* Deep dive context surface — warm tint when inside a dive. */
+  --color-dive-surface: oklch(0.17 0.025 75);
+
+  /* Resolution/result card — slightly elevated with warm tint. */
+  --color-resolution: oklch(0.20 0.02 75);
+
+  /* Code block background — darker than surface, monospace context. */
+  --color-codeblock: oklch(0.13 0.008 260);
+
+  /* Hover state — generic hover for interactive elements. */
+  --color-hover: oklch(0.20 0.015 260);
+
+  /* Selected/active state — stronger than hover, indicates current. */
+  --color-active: oklch(0.23 0.02 275);
+
+  /* Input backgrounds — form fields, search bars. */
+  --color-input: oklch(0.14 0.012 260);
+
+  /* Ring/focus — keyboard focus indicator. Uses primary at lower opacity. */
+  --color-ring: oklch(0.65 0.22 275);
+
+
+  /* --------------------------------------------------------------------------
+   * 6. SIDEBAR-SPECIFIC
+   * --------------------------------------------------------------------------
+   * Sidebar has its own foreground/active because it sits on a different
+   * background tier than the main content.
+   * ------------------------------------------------------------------------ */
+
+  --color-sidebar-foreground: oklch(0.65 0.01 260);
+  --color-sidebar-active: oklch(0.65 0.22 275);
+  --color-sidebar-hover: oklch(0.18 0.015 260);
+  --color-sidebar-active-bg: oklch(0.22 0.04 275);
+
+
+  /* --------------------------------------------------------------------------
+   * 7. MUTED SURFACE (for shadcn/ui compatibility)
+   * --------------------------------------------------------------------------
+   * shadcn/ui expects --color-muted for subtle backgrounds (badges, etc.)
+   * and --color-accent for interactive hover states.
+   * ------------------------------------------------------------------------ */
+
+  --color-muted: oklch(0.19 0.014 260);
+  --color-accent: oklch(0.20 0.015 260);
+  --color-accent-foreground: oklch(0.95 0.005 260);
+
+
+  /* --------------------------------------------------------------------------
+   * 8. TYPOGRAPHY
+   * ------------------------------------------------------------------------ */
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+
+  /* --------------------------------------------------------------------------
+   * 9. SPACING SCALE (8px base)
+   * --------------------------------------------------------------------------
+   * Named tokens for consistent spacing. All multiples of 4px,
+   * primary rhythm on 8px grid.
+   *
+   * Usage: p-space-xs, gap-space-md, m-space-2xl, etc.
+   * ------------------------------------------------------------------------ */
+
+  --spacing-space-3xs: 2px;     /* 0.25x — hairline gaps */
+  --spacing-space-2xs: 4px;     /* 0.5x  — tight internal padding */
+  --spacing-space-xs:  8px;     /* 1x    — small gaps, icon padding */
+  --spacing-space-sm: 12px;     /* 1.5x  — compact element spacing */
+  --spacing-space-md: 16px;     /* 2x    — standard padding, gap */
+  --spacing-space-lg: 24px;     /* 3x    — section padding */
+  --spacing-space-xl: 32px;     /* 4x    — large section gaps */
+  --spacing-space-2xl: 48px;    /* 6x    — page section spacing */
+  --spacing-space-3xl: 64px;    /* 8x    — major layout divisions */
+  --spacing-space-4xl: 96px;    /* 12x   — hero/splash spacing */
+
+
+  /* --------------------------------------------------------------------------
+   * 10. BORDER RADIUS SCALE
+   * --------------------------------------------------------------------------
+   * Consistent rounding. "sm" for small inline elements, "md" for buttons
+   * and inputs, "lg" for cards and panels, "xl" for modals, "full" for
+   * pills and avatars.
+   * ------------------------------------------------------------------------ */
+
+  --radius-none: 0px;
+  --radius-sm: 4px;           /* Badges, tags, small chips */
+  --radius-md: 6px;           /* Buttons, inputs, dropdowns */
+  --radius-lg: 8px;           /* Cards, panels, list items */
+  --radius-xl: 12px;          /* Modals, dialogs, popovers */
+  --radius-2xl: 16px;         /* Large feature cards */
+  --radius-full: 9999px;      /* Pills, avatars, toggles */
+
+
+  /* --------------------------------------------------------------------------
+   * 11. SHADOW SCALE (dark mode tuned)
+   * --------------------------------------------------------------------------
+   * Shadows in dark mode must be extremely subtle — they add depth without
+   * creating visible edges. We use dark rgba values with slight opacity,
+   * not the pure-black blobs that look wrong on dark backgrounds.
+   *
+   * Note: Tailwind v4 @theme does not support --shadow-* tokens directly.
+   * These are defined as CSS custom properties below and used via
+   * arbitrary values: shadow-[var(--shadow-md)]
+   * ------------------------------------------------------------------------ */
+}
+
+
+/* --------------------------------------------------------------------------
+ * CSS CUSTOM PROPERTIES: Shadows
+ * --------------------------------------------------------------------------
+ * Defined outside @theme because Tailwind v4's @theme block does not
+ * support shadow tokens. Use with arbitrary value syntax:
+ *   class="shadow-[var(--shadow-sm)]"
+ * or apply directly in component styles.
+ * ------------------------------------------------------------------------ */
+
+:root {
+  --shadow-xs:  0 1px 2px  oklch(0 0 0 / 0.3);
+  --shadow-sm:  0 1px 3px  oklch(0 0 0 / 0.4),
+                0 1px 2px  oklch(0 0 0 / 0.3);
+  --shadow-md:  0 4px 6px  oklch(0 0 0 / 0.35),
+                0 2px 4px  oklch(0 0 0 / 0.3);
+  --shadow-lg:  0 10px 15px oklch(0 0 0 / 0.35),
+                0 4px 6px  oklch(0 0 0 / 0.3);
+  --shadow-xl:  0 20px 25px oklch(0 0 0 / 0.35),
+                0 8px 10px oklch(0 0 0 / 0.25);
+  --shadow-glow-primary: 0 0 20px oklch(0.65 0.22 275 / 0.15);
+  --shadow-glow-dive:    0 0 20px oklch(0.72 0.17 75 / 0.15);
+}
+
+
+/* --------------------------------------------------------------------------
+ * BASE STYLES
+ * ------------------------------------------------------------------------ */
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* Scrollbar styling — subtle, matches the palette. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.28 0.01 260) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: oklch(0.28 0.01 260);
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: oklch(0.35 0.01 260);
+}
+
+/* Selection color — uses primary accent. */
+::selection {
+  background-color: oklch(0.65 0.22 275 / 0.3);
+  color: oklch(0.95 0.005 260);
+}

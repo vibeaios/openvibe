@@ -1,13 +1,15 @@
 # OpenVibe
 
-> A Fork/Resolve Thread product for Human + AI agent collaboration
+> **Updated 2026-02-08:** Terminology changed from Fork/Resolve to Deep Dive/Publish per PRODUCT-CORE-REFRAME.md
+
+> A Deep Dive Thread product for Human + AI agent collaboration
 
 ## Vision
 
-A team collaboration platform to replace Slack, with the core innovation being the **Fork/Resolve** conversation model:
-- **Fork** — Create a side thread from any message to dive deep with AI
-- **Resolve** — AI generates a summary, and conclusions flow back to the main thread
-- **Abandon** — Archive explorations that don't need a summary
+A team collaboration platform to replace Slack, with the core innovation being the **Deep Dive** conversation model:
+- **Deep Dive** — Start an AI-assisted exploration from any message point
+- **Publish** — AI generates a structured result, and findings flow back to the main thread
+- **Discard** — Archive explorations that don't need to be published
 
 The core problem it solves: Someone on the team asks a question, another person copies it to an AI to research, pastes the result back, the result is too long, someone else copies it to another AI to digest, and context is continuously lost.
 
@@ -46,9 +48,9 @@ Phase 3: Dogfood ──────────── Pending
 
 | Decision | Rationale |
 |----------|-----------|
-| **Fork/Resolve** (not Branch/Merge) | Simpler mental model, proven in Discourse research |
-| **AI Summary Quality = Critical Risk** | The entire model depends on AI generating good resolution summaries |
-| **2 agents for MVP** | @Vibe (general), @Coder (dev tasks) |
+| **Deep Dive/Publish** (not Branch/Merge) | Simpler mental model, AI as thinking partner |
+| **AI Deep Dive Quality = Critical Risk** | The entire model depends on AI being a good thinking partner and generating good dive results |
+| **2 agents for MVP** | @Vibe (general + deep dive partner), @Coder (dev tasks) |
 | **~$640-940/month** | Dogfood infrastructure cost (20 users) |
 | **8-week sprint plan** | BDD specs, feature-by-feature implementation |
 
@@ -64,7 +66,7 @@ Phase 3: Dogfood ──────────── Pending
 ### Phase 1 Research (R1-R7)
 | Doc | Question |
 |-----|----------|
-| [`R1-THREAD-MODEL.md`](docs/research/R1-THREAD-MODEL.md) | Fork/Resolve vs Git-like branching |
+| [`R1-THREAD-MODEL.md`](docs/research/R1-THREAD-MODEL.md) | Deep Dive/Publish vs Git-like branching |
 | [`R2-GENERATIVE-UI.md`](docs/research/R2-GENERATIVE-UI.md) | Config-driven UI for verticals |
 | [`R3-AGENT-LIFECYCLE.md`](docs/research/R3-AGENT-LIFECYCLE.md) | Long-running task management |
 | [`R4-CLAUDE-TEAMS.md`](docs/research/R4-CLAUDE-TEAMS.md) | Claude Code SDK integration |
@@ -78,7 +80,7 @@ Phase 3: Dogfood ──────────── Pending
 | Doc | Content |
 |-----|---------|
 | [`SYSTEM-ARCHITECTURE.md`](docs/research/phase-1.5/SYSTEM-ARCHITECTURE.md) | Full infrastructure (dogfood vs scale) |
-| [`THREAD-UX-PROPOSAL.md`](docs/research/phase-1.5/THREAD-UX-PROPOSAL.md) | Fork/Resolve UX design |
+| [`THREAD-UX-PROPOSAL.md`](docs/research/phase-1.5/THREAD-UX-PROPOSAL.md) | Deep Dive/Publish UX design |
 | [`AGENT-DEFINITION-MODEL.md`](docs/research/phase-1.5/AGENT-DEFINITION-MODEL.md) | Agent configuration model |
 | [`BDD-IMPLEMENTATION-PLAN.md`](docs/research/phase-1.5/BDD-IMPLEMENTATION-PLAN.md) | **8-week sprint plan + Gherkin specs** |
 | [`FRONTEND-ARCHITECTURE.md`](docs/research/phase-1.5/FRONTEND-ARCHITECTURE.md) | Next.js + Zustand + tRPC |
@@ -111,7 +113,7 @@ Phase 3: Dogfood ──────────── Pending
 1. **Setup monorepo** — Nx workspace structure
 2. **Implement Foundation Epic** — Auth, workspace creation (Week 1-2)
 3. **Thread + Messaging Epic** — Core chat functionality (Week 3-4)
-4. **Fork/Resolve Epic** — The differentiator (Week 5-6)
+4. **Deep Dive/Publish Epic** — The differentiator (Week 5-6)
 5. **Agent Integration Epic** — @Vibe, @Coder (Week 7-8)
 
 See [`BDD-IMPLEMENTATION-PLAN.md`](docs/research/phase-1.5/BDD-IMPLEMENTATION-PLAN.md) for detailed Gherkin specs.

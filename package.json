@@ -1,0 +1,24 @@
+{
+  "name": "openvibe",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenVibe - AI-native team collaboration with Fork/Resolve threads",
+  "packageManager": "pnpm@10.29.1",
+  "scripts": {
+    "dev": "nx run web:dev",
+    "build": "nx run web:build",
+    "lint": "nx run-many --target=lint",
+    "typecheck": "nx run-many --target=typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate": "pnpm --filter @openvibe/db migrate",
+    "db:seed": "pnpm --filter @openvibe/db seed"
+  },
+  "nx": {},
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.18",
+    "nx": "^20.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^4.0.18"
+  }
+}

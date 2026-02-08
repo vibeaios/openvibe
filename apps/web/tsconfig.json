@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "plugins": [{ "name": "next" }],
+    "jsx": "preserve",
+    "allowJs": true,
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@openvibe/core": ["../../packages/core/src/index.ts"],
+      "@openvibe/core/*": ["../../packages/core/src/*"],
+      "@openvibe/db": ["../../packages/db/src/index.ts"],
+      "@openvibe/db/*": ["../../packages/db/src/*"],
+      "@openvibe/ui": ["../../packages/ui/src/index.ts"],
+      "@openvibe/ui/*": ["../../packages/ui/src/*"],
+      "@openvibe/thread-engine": ["../../packages/thread-engine/src/index.ts"],
+      "@openvibe/agent-runtime": ["../../packages/agent-runtime/src/index.ts"],
+      "@openvibe/auth": ["../../packages/auth/src/index.ts"],
+      "@openvibe/config": ["../../packages/config/src/index.ts"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
