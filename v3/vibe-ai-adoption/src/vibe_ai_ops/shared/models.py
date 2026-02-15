@@ -12,6 +12,11 @@ class Tier(str, Enum):
     VALIDATION = "validation"
 
 
+class ArchitectureType(str, Enum):
+    TEMPORAL_LANGGRAPH_CREWAI = "temporal_langgraph_crewai"  # Deep dive: full pipeline
+    TEMPORAL_CREWAI = "temporal_crewai"  # Validation: Temporal triggers CrewAI directly
+
+
 class TriggerType(str, Enum):
     CRON = "cron"
     WEBHOOK = "webhook"
@@ -30,6 +35,7 @@ class AgentConfig(BaseModel):
     name: str
     engine: str  # marketing | sales | cs | intelligence
     tier: Tier
+    architecture: ArchitectureType = ArchitectureType.TEMPORAL_CREWAI
     trigger: TriggerConfig
     output_channel: str  # e.g. "slack:#marketing-agents"
     prompt_file: str  # relative to config/prompts/
@@ -37,6 +43,8 @@ class AgentConfig(BaseModel):
     model: str = "claude-sonnet-4-5-20250929"
     max_tokens: int = 4096
     temperature: float = 0.7
+    crew_config: dict[str, Any] | None = None  # CrewAI crew setup
+    graph_config: dict[str, Any] | None = None  # LangGraph workflow setup
 
 
 class AgentOutput(BaseModel):

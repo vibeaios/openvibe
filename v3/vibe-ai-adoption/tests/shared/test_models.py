@@ -1,4 +1,7 @@
-from vibe_ai_ops.shared.models import AgentConfig, AgentOutput, AgentRun, Tier, TriggerType
+from vibe_ai_ops.shared.models import (
+    AgentConfig, AgentOutput, AgentRun, Tier, TriggerType,
+    ArchitectureType,
+)
 
 
 def test_agent_config_from_dict():
@@ -61,3 +64,40 @@ def test_agent_run_tracks_failure():
     )
     assert run.status == "error"
     assert run.error == "Rate limited by Claude API"
+
+
+def test_agent_config_with_architecture():
+    data = {
+        "id": "m3",
+        "name": "Content Generation",
+        "engine": "marketing",
+        "tier": "deep_dive",
+        "architecture": "temporal_langgraph_crewai",
+        "trigger": {"type": "cron", "schedule": "0 9 * * *"},
+        "output_channel": "slack:#marketing-agents",
+        "prompt_file": "marketing/m3_content_generation.md",
+        "crew_config": {
+            "agents": ["researcher", "writer", "editor"],
+            "process": "sequential",
+        },
+    }
+    config = AgentConfig(**data)
+    assert config.architecture == ArchitectureType.TEMPORAL_LANGGRAPH_CREWAI
+    assert config.crew_config is not None
+    assert len(config.crew_config["agents"]) == 3
+
+
+def test_validation_agent_uses_simple_architecture():
+    data = {
+        "id": "m1",
+        "name": "Segment Research",
+        "engine": "marketing",
+        "tier": "validation",
+        "architecture": "temporal_crewai",
+        "trigger": {"type": "cron", "schedule": "0 9 * * 1"},
+        "output_channel": "slack:#marketing-agents",
+        "prompt_file": "marketing/m1_segment_research.md",
+    }
+    config = AgentConfig(**data)
+    assert config.architecture == ArchitectureType.TEMPORAL_CREWAI
+    assert config.crew_config is None
