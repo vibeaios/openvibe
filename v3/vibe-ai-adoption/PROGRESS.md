@@ -3,7 +3,7 @@
 > Started: 2026-02-15
 > Plan: `docs/plans/2026-02-15-vibe-ai-ops-full-stack.md`
 > Branch: `epic/vibe-ai-ops`
-> Status: Phase 4 complete, Phase 5 next
+> Status: Phase 5 T22-T24 complete. T25 (smoke test) and T26 (go live) require real API keys + Docker.
 
 ---
 
@@ -19,9 +19,9 @@
 | Phase 2: First Agent S1 (T10-T13) | DONE | 9 |
 | Phase 3: Marketing Engine (T14-T16) | DONE | 11 |
 | Phase 4: Sales+CS+Intel (T17-T20) | DONE | 20 |
-| Phase 5: Production Wiring (T22-T26) | NOT STARTED | 0 |
+| Phase 5: Production Wiring (T22-T24) | DONE | 10 |
 
-**Full suite: 73/73 tests passing**
+**Full suite: 83/83 tests passing**
 
 ---
 
@@ -49,10 +49,17 @@
 | `e48b506` | T18 | S3 Engagement deep-dive (3-agent crew + 4-node graph) |
 | `90ff6aa` | T19 | CS prompts C1-C5 + 5 validation crews + registry |
 | `ad78a8a` | T20 | Intelligence prompts R1-R4 + 4 validation crews + registry |
+| `449198b` | T22 | Main entry point + unified CREW_REGISTRY (20 agents) |
+| `7669e52` | T23 | CLI: list, info, summary commands |
 
 ---
 
 ## What's Built
+
+### Production Layer (NEW)
+- `main.py` — `build_system()`: loads configs, creates all 20 crews, builds Temporal schedules
+- `main.py` — `CREW_REGISTRY`: unified dict mapping all 20 agent IDs to crew factories
+- `cli.py` — CLI: `list` (with `--engine` filter), `info <agent_id>`, `summary`
 
 ### Shared Infrastructure
 - `shared/models.py` — AgentConfig, AgentOutput, AgentRun, ArchitectureType
@@ -112,15 +119,12 @@
 
 ---
 
-## Next: Phase 5 — Production Wiring
+## Remaining: T25-T26 (require infrastructure)
 
-| Task | Description |
-|------|-------------|
-| T22 | Main entry point + Temporal schedule registration |
-| T23 | CLI for manual agent execution |
-| T24 | Full test suite verification |
-| T25 | Smoke test with real APIs |
-| T26 | Go live |
+| Task | Description | Requires |
+|------|-------------|----------|
+| T25 | Smoke test with real APIs | `.env` with API keys + `docker compose up` |
+| T26 | Go live | Temporal Cloud or local Docker, real HubSpot/Slack |
 
 ---
 
