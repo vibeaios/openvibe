@@ -1,47 +1,50 @@
-"""Integration test: verify all 3 layers wire together."""
-import os
+"""Integration test: verify operators wire through all layers."""
+
 from unittest.mock import patch
 
-from vibe_ai_ops.shared.models import AgentConfig
-from vibe_ai_ops.crews.base import create_crew_agent
-from vibe_ai_ops.graphs.checkpointer import create_checkpointer
+from vibe_ai_ops.operators.base import OperatorRuntime
+from vibe_ai_ops.operators.company_intel.workflows.research import (
+    create_company_intel_graph,
+)
+from vibe_ai_ops.shared.claude_client import ClaudeResponse
 from vibe_ai_ops.temporal.schedules import build_schedule_specs
-from vibe_ai_ops.temporal.activities.agent_activity import AgentActivityInput
+from vibe_ai_ops.temporal.activities.company_intel_activity import CompanyIntelInput
 
 
-@patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-ant-test-key"})
-def test_config_loads_into_all_layers():
-    """Config -> CrewAI + LangGraph + Temporal all connect."""
-    config = AgentConfig(
-        id="m1", name="Segment Research", engine="marketing",
-        tier="validation", architecture="temporal_crewai",
-        trigger={"type": "cron", "schedule": "0 9 * * 1"},
-        output_channel="slack:#marketing-agents",
-        prompt_file="marketing/m1_segment_research.md",
-    )
+def test_operator_runtime_activates_workflow():
+    """OperatorRuntime → register → activate → LangGraph graph runs."""
+    runtime = OperatorRuntime(config_path="config/operators.yaml")
+    runtime.load(enabled_only=True)
+    runtime.register_workflow("company_intel", "research", create_company_intel_graph)
 
-    # Layer 3: CrewAI — can create an agent
-    agent = create_crew_agent(
-        config=config,
-        role="Market Research Specialist",
-        goal="Identify micro-segments",
-        backstory="You are Vibe's market researcher.",
-    )
-    assert agent.role == "Market Research Specialist"
+    with patch(
+        "vibe_ai_ops.operators.company_intel.workflows.research.call_claude"
+    ) as mock_claude:
+        mock_claude.return_value = ClaudeResponse(
+            content="Test research output",
+            tokens_in=100,
+            tokens_out=200,
+            model="claude-haiku-4-5-20251001",
+        )
+        result = runtime.activate(
+            "company_intel", "query", {"company_name": "TestCo"}
+        )
 
-    # Layer 2: LangGraph — can create a checkpointer
-    cp = create_checkpointer(conn_string=None)
-    assert cp is not None
+    assert result["company_name"] == "TestCo"
+    assert "research" in result
 
-    # Layer 1: Temporal — can build schedule specs
-    specs = build_schedule_specs([config])
-    assert len(specs) == 1
-    assert specs[0]["agent_id"] == "m1"
 
-    # Activity input works
-    inp = AgentActivityInput(
-        agent_id="m1",
-        agent_config_path="config/agents.yaml",
-        input_data={"segments": ["enterprise-fintech"]},
-    )
-    assert inp.agent_id == "m1"
+def test_temporal_schedule_specs_from_agent_configs():
+    """Temporal schedule specs still build from agent configs."""
+    from vibe_ai_ops.shared.config import load_agent_configs
+
+    configs = load_agent_configs("config/agents.yaml", enabled_only=True)
+    specs = build_schedule_specs(configs)
+    assert len(specs) > 0
+    assert all("agent_id" in s for s in specs)
+
+
+def test_temporal_activity_input_works():
+    """Temporal activity input dataclass is valid."""
+    inp = CompanyIntelInput(company_name="Stripe")
+    assert inp.company_name == "Stripe"

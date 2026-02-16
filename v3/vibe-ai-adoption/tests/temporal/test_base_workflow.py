@@ -1,10 +1,15 @@
+"""Tests for Temporal activities — operator activity + dataclasses."""
+
 import pytest
 from unittest.mock import patch
 
 from vibe_ai_ops.temporal.activities.agent_activity import (
-    run_validation_agent,
     AgentActivityInput,
     AgentActivityOutput,
+)
+from vibe_ai_ops.temporal.activities.operator_activity import (
+    OperatorActivityInput,
+    OperatorActivityOutput,
 )
 
 
@@ -18,22 +23,23 @@ async def test_agent_activity_input_model():
     assert inp.agent_id == "m1"
 
 
-@pytest.mark.asyncio
-@patch("vibe_ai_ops.temporal.activities.agent_activity._execute_agent")
-async def test_run_validation_agent(mock_execute):
-    mock_execute.return_value = AgentActivityOutput(
-        agent_id="m1",
-        status="success",
-        content="Segment analysis for enterprise-fintech...",
-        cost_usd=0.03,
-        duration_seconds=4.5,
+def test_operator_activity_input_model():
+    inp = OperatorActivityInput(
+        operator_id="revenue_ops",
+        trigger_id="new_lead",
+        input_data={"contact_id": "c-123"},
     )
+    assert inp.operator_id == "revenue_ops"
+    assert inp.trigger_id == "new_lead"
 
-    result = await run_validation_agent(AgentActivityInput(
-        agent_id="m1",
-        agent_config_path="config/agents.yaml",
-        input_data={"segments": ["enterprise-fintech"]},
-    ))
 
-    assert result.status == "success"
-    assert result.agent_id == "m1"
+def test_operator_activity_output_model():
+    out = OperatorActivityOutput(
+        operator_id="revenue_ops",
+        trigger_id="new_lead",
+        status="success",
+        result={"route": "sales"},
+        duration_seconds=2.5,
+    )
+    assert out.status == "success"
+    assert out.result["route"] == "sales"

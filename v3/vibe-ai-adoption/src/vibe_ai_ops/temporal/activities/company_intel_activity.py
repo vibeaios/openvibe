@@ -1,7 +1,7 @@
 """Temporal activity for the Company Intelligence operator.
 
 This is the bridge between Temporal (scheduling) and LangGraph (workflow).
-Temporal calls this activity → activity runs the LangGraph graph → graph uses CrewAI.
+Temporal calls this activity → activity runs the LangGraph graph → graph uses Claude SDK.
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ class CompanyIntelOutput:
 async def run_company_intel(inp: CompanyIntelInput) -> CompanyIntelOutput:
     """Temporal activity: run the Company Intel LangGraph graph.
 
-    Chain: Temporal activity → LangGraph graph → CrewAI agents → Claude API
+    Chain: Temporal activity → LangGraph graph → Claude API
     """
     start = time.time()
 

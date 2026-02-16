@@ -47,6 +47,54 @@ class AgentConfig(BaseModel):
     graph_config: dict[str, Any] | None = None  # LangGraph workflow setup
 
 
+# ---------------------------------------------------------------------------
+# Operator models — replaces flat agent model with grouped operators
+# ---------------------------------------------------------------------------
+
+
+class NodeType(str, Enum):
+    LOGIC = "logic"
+    LLM = "llm"
+
+
+class OperatorTriggerConfig(BaseModel):
+    id: str
+    type: TriggerType
+    schedule: str | None = None
+    source: str | None = None
+    workflow: str
+    description: str = ""
+
+
+class NodeConfig(BaseModel):
+    id: str
+    type: NodeType = NodeType.LOGIC
+    model: str | None = None
+    prompt_file: str | None = None
+
+
+class WorkflowConfig(BaseModel):
+    id: str
+    description: str = ""
+    nodes: list[NodeConfig]
+    checkpointed: bool = True
+    durable: bool = False
+    max_duration_days: int | None = None
+    timeout_minutes: int = 5
+
+
+class OperatorConfig(BaseModel):
+    id: str
+    name: str
+    owner: str = ""
+    description: str = ""
+    output_channels: list[str] = Field(default_factory=list)
+    state_schema: str = ""
+    triggers: list[OperatorTriggerConfig]
+    workflows: list[WorkflowConfig]
+    enabled: bool = True
+
+
 class AgentOutput(BaseModel):
     agent_id: str
     content: str

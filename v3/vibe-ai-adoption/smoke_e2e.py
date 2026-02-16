@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""End-to-end smoke test: Temporal → LangGraph → CrewAI → Claude.
+"""End-to-end smoke test: Temporal → LangGraph → Claude API.
 
-This script runs the full 3-layer stack in a single process:
+This script runs the full stack in a single process:
 1. Connects to Temporal server (must be running)
 2. Starts a local worker (listens for tasks)
 3. Submits a CompanyIntelWorkflow

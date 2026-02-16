@@ -24,7 +24,7 @@ class AgentActivityOutput:
 
 
 async def _execute_agent(inp: AgentActivityInput) -> AgentActivityOutput:
-    """Execute agent — this will be wired to real CrewAI/LangGraph in later tasks."""
+    """Execute agent — deprecated, use run_operator() instead."""
     raise NotImplementedError("Wire to specific agent implementation")
 
 

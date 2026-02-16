@@ -1,7 +1,7 @@
 [project]
 name = "vibe-ai-ops"
 version = "0.1.0"
-description = "20 AI agents powering Vibe's GTM — Temporal + LangGraph + CrewAI"
+description = "5 AI operators powering Vibe's GTM — Temporal + LangGraph + Anthropic SDK"
 requires-python = ">=3.12"
 dependencies = [
     # Layer 1: Temporal
@@ -12,10 +12,6 @@ dependencies = [
     "langgraph-checkpoint-postgres>=2.0.0",
     "langchain-anthropic>=0.3.0",
     "langsmith>=0.2.0",
-
-    # Layer 3: CrewAI
-    "crewai>=0.100.0",
-    "crewai-tools>=0.17.0",
 
     # Shared services
     "anthropic>=0.40.0",

@@ -31,13 +31,12 @@ class CompanyIntelWorkflowInput:
 
 @workflow.defn
 class CompanyIntelWorkflow:
-    """Temporal workflow: research a company through the full 3-layer stack.
+    """Temporal workflow: research a company through the full stack.
 
     Temporal (this workflow)
       → Activity (company_intel_activity)
         → LangGraph (4-node graph)
-          → CrewAI (researcher + analyst agents)
-            → Claude API
+          → Claude API (via call_claude)
     """
 
     @workflow.run

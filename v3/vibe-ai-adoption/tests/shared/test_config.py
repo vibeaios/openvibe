@@ -3,7 +3,7 @@ import tempfile
 
 import yaml
 
-from vibe_ai_ops.shared.config import load_agent_configs, load_prompt
+from vibe_ai_ops.shared.config import load_agent_configs, load_operator_configs, load_prompt
 
 
 def test_load_agent_configs():
@@ -82,3 +82,82 @@ def test_load_configs_filters_disabled():
     assert len(configs) == 1
     assert configs[0].id == "m3"
     os.unlink(f.name)
+
+
+# --- Operator config tests ---
+
+
+def test_load_operator_configs():
+    config_data = {
+        "operators": [
+            {
+                "id": "company_intel",
+                "name": "Company Intelligence",
+                "triggers": [
+                    {"id": "query", "type": "on_demand", "workflow": "research"},
+                ],
+                "workflows": [
+                    {
+                        "id": "research",
+                        "nodes": [
+                            {"id": "research", "type": "llm", "model": "claude-haiku-4-5-20251001"},
+                            {"id": "decide", "type": "logic"},
+                        ],
+                    },
+                ],
+            },
+        ]
+    }
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(config_data, f)
+        f.flush()
+        configs = load_operator_configs(f.name)
+
+    assert len(configs) == 1
+    assert configs[0].id == "company_intel"
+    assert len(configs[0].workflows[0].nodes) == 2
+    assert configs[0].workflows[0].nodes[0].type.value == "llm"
+    os.unlink(f.name)
+
+
+def test_load_operator_configs_filters_disabled():
+    config_data = {
+        "operators": [
+            {
+                "id": "active",
+                "name": "Active",
+                "enabled": True,
+                "triggers": [{"id": "t", "type": "on_demand", "workflow": "w"}],
+                "workflows": [{"id": "w", "nodes": [{"id": "n"}]}],
+            },
+            {
+                "id": "inactive",
+                "name": "Inactive",
+                "enabled": False,
+                "triggers": [{"id": "t", "type": "on_demand", "workflow": "w"}],
+                "workflows": [{"id": "w", "nodes": [{"id": "n"}]}],
+            },
+        ]
+    }
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        yaml.dump(config_data, f)
+        f.flush()
+        configs = load_operator_configs(f.name, enabled_only=True)
+
+    assert len(configs) == 1
+    assert configs[0].id == "active"
+    os.unlink(f.name)
+
+
+def test_load_real_operators_yaml():
+    """Validate the real operators.yaml parses correctly."""
+    configs = load_operator_configs("config/operators.yaml")
+    assert len(configs) == 5
+
+    ids = {c.id for c in configs}
+    assert ids == {"company_intel", "revenue_ops", "content_engine", "customer_success", "market_intel"}
+
+    # Revenue ops has 5 triggers and 5 workflows
+    rev_ops = next(c for c in configs if c.id == "revenue_ops")
+    assert len(rev_ops.triggers) == 5
+    assert len(rev_ops.workflows) == 5

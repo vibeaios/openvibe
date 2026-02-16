@@ -1,8 +1,8 @@
 # Vibe AI Adoption - Design Document
 
-> **Date:** 2026-02-15
-> **Status:** Approved
-> **Goal:** Validate Temporal + LangGraph + CrewAI 3-layer architecture by deeply verifying 3 workflows
+> **Date:** 2026-02-15 (updated 2026-02-16)
+> **Status:** Implemented
+> **Goal:** Validate Temporal + LangGraph architecture with 5 operators and 22 workflows
 
 ---
 
@@ -30,10 +30,10 @@
                       │ executes
                       ▼
 ┌─────────────────────────────────────────────────────────┐
-│  Layer 3: Agent Roles (CrewAI)                          │
-│  - Role definition (role, goal, backstory)              │
-│  - Tool binding (CRM API, research tools, etc.)         │
-│  - Team collaboration (delegation, shared context)      │
+│  Layer 3: LLM Calls (Anthropic SDK)                     │
+│  - Direct Claude API via call_claude()                  │
+│  - Model selection per node (haiku/sonnet)              │
+│  - Cost tracking via ClaudeClient                       │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -41,10 +41,10 @@
 
 | Component | Choice | Reason |
 |-----------|--------|--------|
-| Language | Python | LangGraph/CrewAI ecosystem is Python-native |
+| Language | Python | LangGraph/Anthropic SDK ecosystem is Python-native |
 | Scheduler | Temporal Cloud | Durable execution, production-grade, avoid self-hosted ops |
 | Workflow Engine | LangGraph | State persistence via Postgres checkpointer, HITL, LangChain ecosystem |
-| Agent Framework | CrewAI | Fast role-based agent definition, low learning curve |
+| LLM | Anthropic SDK | Direct Claude API calls via call_claude() wrapper |
 | LLM | Claude API (Sonnet 4.5) | Strong reasoning, long context |
 | Observability | LangSmith | Native LangGraph integration, trace every LLM call |
 | CRM | HubSpot API | Leads, contacts, enrichment |

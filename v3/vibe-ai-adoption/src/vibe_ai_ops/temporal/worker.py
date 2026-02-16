@@ -6,11 +6,8 @@ import os
 from temporalio.client import Client
 from temporalio.worker import Worker
 
-from vibe_ai_ops.temporal.activities.agent_activity import (
-    run_validation_agent,
-    run_deep_dive_agent,
-)
 from vibe_ai_ops.temporal.activities.company_intel_activity import run_company_intel
+from vibe_ai_ops.temporal.activities.operator_activity import run_operator
 from vibe_ai_ops.temporal.workflows.company_intel_workflow import CompanyIntelWorkflow
 
 TASK_QUEUE = "vibe-ai-ops"
@@ -43,7 +40,7 @@ async def run_worker():
         client,
         task_queue=TASK_QUEUE,
         workflows=[CompanyIntelWorkflow],
-        activities=[run_validation_agent, run_deep_dive_agent, run_company_intel],
+        activities=[run_company_intel, run_operator],
     )
     print(f"Worker started on task queue: {TASK_QUEUE}")
     await worker.run()

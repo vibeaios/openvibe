@@ -1,50 +1,39 @@
-"""Tests for main entry point — build_system()."""
-import os
-from unittest.mock import patch
+"""Tests for main entry point — build_system() with OperatorRuntime."""
 
-from vibe_ai_ops.main import build_system, CREW_REGISTRY
+from vibe_ai_ops.main import build_system, _WORKFLOW_REGISTRY
 
 
-@patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-ant-test-key"})
-def test_build_system_loads_all_agents():
-    system = build_system(config_path="config/agents.yaml")
-    assert system["agent_count"] == 20
-    assert len(system["configs"]) == 20
+def test_build_system_loads_all_operators():
+    system = build_system(config_path="config/operators.yaml")
+    assert system["operator_count"] == 5
+    assert len(system["operators"]) == 5
 
 
-@patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-ant-test-key"})
-def test_build_system_builds_schedule_specs():
-    system = build_system(config_path="config/agents.yaml")
-    # Only cron-triggered agents get schedules
-    cron_agents = [c for c in system["configs"] if c.trigger.type.value == "cron"]
-    assert len(system["schedules"]) == len(cron_agents)
-    assert len(system["schedules"]) > 0
+def test_build_system_returns_summary():
+    system = build_system(config_path="config/operators.yaml")
+    summary = system["summary"]
+    assert summary["operators"] == 5
+    assert summary["workflows"] > 0
+    assert summary["nodes"] > 0
+    assert summary["llm_nodes"] > 0
+    assert summary["logic_nodes"] > 0
 
 
-@patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-ant-test-key"})
-def test_build_system_creates_crews_for_registered_agents():
-    system = build_system(config_path="config/agents.yaml")
-    # All agents with crew registries should have crews built
-    assert len(system["crews"]) > 0
-    # Every registered agent ID should have a crew
-    for agent_id in system["crews"]:
-        assert agent_id in CREW_REGISTRY
+def test_build_system_registers_workflow_factories():
+    system = build_system(config_path="config/operators.yaml")
+    runtime = system["runtime"]
+    # Company intel research should be registered
+    factory = runtime.get_workflow_factory("company_intel", "research")
+    assert factory is not None
 
 
-def test_crew_registry_has_all_engines():
-    # Registry should cover all 4 engines
-    engines = set()
-    for agent_id in CREW_REGISTRY:
-        if agent_id.startswith("m"):
-            engines.add("marketing")
-        elif agent_id.startswith("s"):
-            engines.add("sales")
-        elif agent_id.startswith("c"):
-            engines.add("cs")
-        elif agent_id.startswith("r"):
-            engines.add("intelligence")
-    assert engines == {"marketing", "sales", "cs", "intelligence"}
+def test_workflow_registry_covers_all_operators():
+    operator_ids = set(op_id for op_id, _ in _WORKFLOW_REGISTRY)
+    assert operator_ids == {
+        "company_intel", "revenue_ops", "content_engine",
+        "customer_success", "market_intel",
+    }
 
 
-def test_crew_registry_has_20_agents():
-    assert len(CREW_REGISTRY) == 20
+def test_workflow_registry_has_22_workflows():
+    assert len(_WORKFLOW_REGISTRY) == 22

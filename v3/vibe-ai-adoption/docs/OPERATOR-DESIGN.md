@@ -1,7 +1,7 @@
 # Operator Design Document
 
 > Date: 2026-02-16
-> Status: Draft
+> Status: Implemented (CrewAI removed — all nodes are logic or llm)
 > Prerequisite: `OPERATOR-PATTERN.md` (concept discovery), `DESIGN.md` (3-layer architecture)
 > Scope: Formal design for the Operator abstraction — the missing layer between business roles and the 3-layer stack
 
@@ -9,7 +9,7 @@
 
 ## 1. Why Operators
 
-The V3 system has 20 AI agents across a 3-layer stack (Temporal + LangGraph + CrewAI). But the architecture treats each agent as an independent unit: 1 agent = 1 trigger = 1 crew.
+The V3 system had 20 AI agents across a 3-layer stack (Temporal + LangGraph + CrewAI). The architecture treated each agent as an independent unit: 1 agent = 1 trigger = 1 crew. **CrewAI has been removed** — all LLM calls now use `call_claude()` directly.
 
 This breaks when modeling real business roles:
 

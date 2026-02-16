@@ -7,10 +7,10 @@ from typing import Any
 from temporalio import workflow
 
 with workflow.unsafe.imports_passed_through():
-    from vibe_ai_ops.graphs.sales.s5_nurture_sequence import (
+    from vibe_ai_ops.operators.revenue_ops.workflows.nurture_sequence import (
         create_nurture_graph,
-        NurtureState,
     )
+    from vibe_ai_ops.operators.revenue_ops.state import RevenueOpsState
 
 
 @dataclass
@@ -41,7 +41,7 @@ class NurtureSequenceWorkflow:
 
     @workflow.run
     async def run(self, inp: NurtureWorkflowInput) -> NurtureWorkflowOutput:
-        state: NurtureState = {
+        state: RevenueOpsState = {
             "contact_id": inp.contact_id,
             "lead_data": inp.lead_data,
             "lead_score": inp.lead_score,
