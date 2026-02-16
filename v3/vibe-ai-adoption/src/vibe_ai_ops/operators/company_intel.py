@@ -14,6 +14,7 @@ from typing import Any, TypedDict
 
 from crewai import Agent, Crew, Task, Process
 from langgraph.graph import StateGraph, END
+from langfuse import observe
 
 
 # ---------------------------------------------------------------------------
@@ -111,6 +112,7 @@ def _create_analyst_crew(company_name: str) -> Crew:
 # 3. LangGraph nodes — each node is one step in the workflow
 # ---------------------------------------------------------------------------
 
+@observe(name="research-node")
 def _research(state: CompanyIntelState) -> CompanyIntelState:
     """Node 1: Research the company using CrewAI researcher agent."""
     company_name = state.get("company_name", "Unknown")
@@ -120,6 +122,7 @@ def _research(state: CompanyIntelState) -> CompanyIntelState:
     return state
 
 
+@observe(name="analyze-node")
 def _analyze(state: CompanyIntelState) -> CompanyIntelState:
     """Node 2: Analyze prospect quality using CrewAI analyst agent."""
     company_name = state.get("company_name", "Unknown")
@@ -133,6 +136,7 @@ def _analyze(state: CompanyIntelState) -> CompanyIntelState:
     return state
 
 
+@observe(name="decide-node")
 def _decide(state: CompanyIntelState) -> CompanyIntelState:
     """Node 3: Extract prospect quality from analysis (pure logic, no AI)."""
     analysis = state.get("analysis", "")
@@ -154,6 +158,7 @@ def _decide(state: CompanyIntelState) -> CompanyIntelState:
     return state
 
 
+@observe(name="report-node")
 def _report(state: CompanyIntelState) -> CompanyIntelState:
     """Node 4: Format final report (pure logic, no AI)."""
     company = state.get("company_name", "Unknown")

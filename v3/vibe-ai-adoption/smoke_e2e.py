@@ -29,6 +29,16 @@ from dotenv import load_dotenv
 # Load .env if present
 load_dotenv()
 
+# Initialize LangFuse tracing
+_langfuse_client = None
+if os.environ.get("LANGFUSE_PUBLIC_KEY"):
+    from langfuse import get_client
+    _langfuse_client = get_client()
+    if _langfuse_client.auth_check():
+        print(f"[Tracing] LangFuse connected → {os.environ.get('LANGFUSE_HOST')}")
+    else:
+        print("[Tracing] LangFuse auth failed — tracing disabled")
+
 
 async def check_connection():
     """Just verify we can connect to Temporal."""
@@ -124,6 +134,11 @@ def main():
 
     company = sys.argv[1] if len(sys.argv) > 1 else "Stripe"
     asyncio.run(run_smoke_test(company))
+
+    # Flush LangFuse traces
+    if _langfuse_client:
+        _langfuse_client.flush()
+        _langfuse_client.shutdown()
 
 
 if __name__ == "__main__":
