@@ -7,9 +7,10 @@
 
 ## Current State
 
-**Phase:** V3 - Vibe AI Adoption (In Progress)
-**Status:** Project structure created. Moving from OpenVibe product development to internal Vibe team dogfooding.
-**Next:** Define V3 implementation roadmap
+**Phase:** V3 - Vibe AI Adoption
+**Status:** 20 AI agents built (Temporal + LangGraph + CrewAI). 98/98 tests passing. 3 design workflows complete.
+**Next:** T25-T26 (smoke test with real API keys + go live). Then iterate on agent output quality.
+**Project dir:** `v3/vibe-ai-adoption/` — read its `PROGRESS.md` for details
 
 **Previous work:**
 - V2: Strategy validation (see `v2/docs/validation/`)
@@ -148,10 +149,12 @@ All V1 docs moved to `v1/docs/`. Key validated assets preserved via V1-INSIGHT-A
 ## Session Resume Protocol
 
 1. Read `PROGRESS.md` (this file) — where we are
-2. Read `v2/docs/THESIS.md` — the "why"
-3. Read `v2/docs/DESIGN-SYNTHESIS.md` — the "what"
-4. Read `v2/docs/STRATEGY.md` — the "how" (market, GTM, build sequence)
+2. Read `v3/docs/THESIS.md` — V3 direction
+3. Read `v3/vibe-ai-adoption/PROGRESS.md` — project status (98 tests, 20 agents)
+4. Read `v3/vibe-ai-adoption/docs/DESIGN.md` — 3-layer architecture + 3 workflows
 5. Important milestones -> pause for user confirmation
+
+For V2 context (archived): `v2/docs/THESIS.md`, `v2/docs/STRATEGY.md`
 
 ## Architecture
 

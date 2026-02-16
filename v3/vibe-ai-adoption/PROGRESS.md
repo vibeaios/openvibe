@@ -2,8 +2,8 @@
 
 > Started: 2026-02-15
 > Plan: `docs/plans/2026-02-15-vibe-ai-ops-full-stack.md`
-> Branch: `epic/vibe-ai-ops`
-> Status: Phase 5 T22-T24 complete. T25 (smoke test) and T26 (go live) require real API keys + Docker.
+> Branch: merged to `main`
+> Status: Phase 6 complete. All 3 design workflows built. T25/T26 require real API keys + Docker.
 
 ---
 
@@ -20,8 +20,9 @@
 | Phase 3: Marketing Engine (T14-T16) | DONE | 11 |
 | Phase 4: Sales+CS+Intel (T17-T20) | DONE | 20 |
 | Phase 5: Production Wiring (T22-T24) | DONE | 10 |
+| Phase 6: Unified Workflows | DONE | 15 |
 
-**Full suite: 83/83 tests passing**
+**Full suite: 98/98 tests passing**
 
 ---
 
@@ -79,7 +80,12 @@
 - `graphs/checkpointer.py` — Postgres + MemorySaver fallback
 - `graphs/sales/s1_lead_qualification.py` — 4-node graph (enrich→score→route→CRM), **fully wired**
 - `graphs/sales/s3_engagement.py` — 4-node graph (research→sequence→personalize→format)
+- `graphs/sales/s5_nurture_sequence.py` — **NEW** 7-node nurture graph with conditional routing (assess→generate→record→evaluate→escalate/complete/wait)
 - `graphs/marketing/m3_content_generation.py` — 4-node graph (research→outline→draft→polish)
+- `graphs/marketing/content_pipeline.py` — **NEW** unified 3-node pipeline chaining M1→M3→M4 (segment research→content gen→repurposing)
+
+### Temporal Workflows
+- `temporal/workflows/nurture_workflow.py` — **NEW** durable multi-day nurture sequence (LangGraph loop + Temporal sleep)
 
 ### CrewAI Layer
 - `crews/base.py` — Agent factory + validation crew builder
@@ -119,12 +125,67 @@
 
 ---
 
+## 3 Design Workflows — Status
+
+| Workflow | Pattern | Graph | Temporal | Tests | Status |
+|----------|---------|-------|----------|-------|--------|
+| Lead Qualification | Webhook → linear pipeline | `s1_lead_qualification.py` | Activity-based | 6 | DONE (fully wired) |
+| Content Pipeline | Cron → multi-agent chain | `content_pipeline.py` (M1→M3→M4) | Not yet wired | 4 | DONE (graph layer) |
+| Nurture Sequence | Event → durable multi-day | `s5_nurture_sequence.py` + `nurture_workflow.py` | Workflow with sleep | 11 | DONE (graph + temporal) |
+
+---
+
 ## Remaining: T25-T26 (require infrastructure)
 
 | Task | Description | Requires |
 |------|-------------|----------|
 | T25 | Smoke test with real APIs | `.env` with API keys + `docker compose up` |
 | T26 | Go live | Temporal Cloud or local Docker, real HubSpot/Slack |
+
+---
+
+## File Index
+
+All source under `src/vibe_ai_ops/`. Tests under `tests/`.
+
+```
+src/vibe_ai_ops/
+├── main.py                          # build_system() + CREW_REGISTRY
+├── cli.py                           # list, info, summary
+├── shared/                          # Infrastructure clients
+│   ├── models.py, config.py
+│   ├── claude_client.py, hubspot_client.py, slack_client.py
+│   ├── logger.py, tracing.py
+├── temporal/                        # Scheduling layer
+│   ├── worker.py, schedules.py
+│   ├── activities/agent_activity.py
+│   └── workflows/nurture_workflow.py
+├── graphs/                          # Workflow layer (LangGraph)
+│   ├── checkpointer.py
+│   ├── marketing/
+│   │   ├── m3_content_generation.py
+│   │   └── content_pipeline.py      # M1→M3→M4 unified
+│   └── sales/
+│       ├── s1_lead_qualification.py
+│       ├── s3_engagement.py
+│       └── s5_nurture_sequence.py
+├── crews/                           # Agent layer (CrewAI)
+│   ├── base.py
+│   ├── marketing/ (m3 + validation_agents)
+│   ├── sales/ (s1, s3 + validation_agents)
+│   ├── cs/validation_agents.py
+│   └── intelligence/validation_agents.py
+└── config/
+    ├── agents.yaml                  # 20 agent definitions
+    └── prompts/                     # 20 system prompts
+```
+
+---
+
+## Plans (reference only)
+
+- `docs/plans/2026-02-15-vibe-ai-ops-full-stack.md` — the plan that was executed (26 tasks, T1-T26)
+- `docs/plans/2026-02-15-vibe-ai-adoption-infra.md` — alternate plan (19 tasks, never executed, superseded)
 
 ---
 

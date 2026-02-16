@@ -11,8 +11,10 @@
 
 ### V3 (Current)
 - **Focus:** Vibe AI Adoption - dogfooding with Marketing & Sales teams
+- **Stack:** Python, Temporal + LangGraph + CrewAI, 20 agents, 98 tests
 - **Docs:** `v3/docs/`
-- **Project:** `v3/vibe-ai-adoption/`
+- **Project:** `v3/vibe-ai-adoption/` (read its `PROGRESS.md` for full status)
+- **Design:** `v3/vibe-ai-adoption/docs/DESIGN.md` (3-layer architecture + 3 workflows)
 
 ### V2 (Archived)
 - **Thesis:** AI is transitioning from tool to colleague. Human+agent collaboration needs a new medium.
