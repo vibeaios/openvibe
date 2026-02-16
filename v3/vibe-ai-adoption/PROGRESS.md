@@ -3,13 +3,15 @@
 > Started: 2026-02-15
 > Plan: `docs/plans/2026-02-15-vibe-ai-ops-full-stack.md`
 > Branch: merged to `main`
-> Status: Phase 6 complete. All 3 design workflows built. T25/T26 require real API keys + Docker.
+> Status: Phase 7 — Operator pattern + e2e smoke test. Deploying to server.
 
 ---
 
 ## Architecture
 
 3-layer stack: Temporal (orchestration) + LangGraph (stateful workflows) + CrewAI (agent roles)
+
+**New concept: Operator** — persistent unit with identity, state, triggers that assembles temporary agents on demand. See `docs/OPERATOR-PATTERN.md`.
 
 ## Quick Stats
 
@@ -21,6 +23,7 @@
 | Phase 4: Sales+CS+Intel (T17-T20) | DONE | 20 |
 | Phase 5: Production Wiring (T22-T24) | DONE | 10 |
 | Phase 6: Unified Workflows | DONE | 15 |
+| Phase 7: Operator Pattern + E2E | IN PROGRESS | 98 (existing) |
 
 **Full suite: 98/98 tests passing**
 
@@ -52,6 +55,8 @@
 | `ad78a8a` | T20 | Intelligence prompts R1-R4 + 4 validation crews + registry |
 | `449198b` | T22 | Main entry point + unified CREW_REGISTRY (20 agents) |
 | `7669e52` | T23 | CLI: list, info, summary commands |
+| `a395e0f` | T25-prep | Company Intel operator — e2e smoke test for Temporal→LangGraph→CrewAI |
+| `12a773d` | T25-prep | LangFuse + CrewAI tracing for observability |
 
 ---
 
@@ -152,14 +157,20 @@ All source under `src/vibe_ai_ops/`. Tests under `tests/`.
 src/vibe_ai_ops/
 ├── main.py                          # build_system() + CREW_REGISTRY
 ├── cli.py                           # list, info, summary
+├── operators/                       # NEW: Operator pattern
+│   └── company_intel.py             # LangGraph graph + CrewAI crews
 ├── shared/                          # Infrastructure clients
 │   ├── models.py, config.py
 │   ├── claude_client.py, hubspot_client.py, slack_client.py
 │   ├── logger.py, tracing.py
 ├── temporal/                        # Scheduling layer
 │   ├── worker.py, schedules.py
-│   ├── activities/agent_activity.py
-│   └── workflows/nurture_workflow.py
+│   ├── activities/
+│   │   ├── agent_activity.py
+│   │   └── company_intel_activity.py  # NEW
+│   └── workflows/
+│       ├── nurture_workflow.py
+│       └── company_intel_workflow.py   # NEW
 ├── graphs/                          # Workflow layer (LangGraph)
 │   ├── checkpointer.py
 │   ├── marketing/
@@ -178,6 +189,9 @@ src/vibe_ai_ops/
 └── config/
     ├── agents.yaml                  # 20 agent definitions
     └── prompts/                     # 20 system prompts
+
+smoke_e2e.py                         # NEW: e2e trigger script
+docs/OPERATOR-PATTERN.md             # NEW: Operator pattern design doc
 ```
 
 ---
@@ -189,4 +203,4 @@ src/vibe_ai_ops/
 
 ---
 
-*Last updated: 2026-02-15*
+*Last updated: 2026-02-16*
