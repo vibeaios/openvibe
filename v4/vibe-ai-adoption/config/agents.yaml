@@ -1,0 +1,252 @@
+# config/agents.yaml
+# All 20 agents — 3 deep-dive (temporal_langgraph_crewai), 17 validation (temporal_crewai)
+
+agents:
+  # ═══════════════════════════════════════════
+  # ENGINE 1: MARKETING (6 agents)
+  # ═══════════════════════════════════════════
+
+  - id: m1
+    name: Segment Research
+    engine: marketing
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 9 * * 1" }  # Monday 9am
+    output_channel: "slack:#marketing-agents"
+    prompt_file: marketing/m1_segment_research.md
+    enabled: true
+    model: claude-sonnet-4-5-20250929
+    max_tokens: 8192
+    temperature: 0.7
+
+  - id: m2
+    name: Message Testing
+    engine: marketing
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 10 * * 1,4" }  # Mon/Thu 10am
+    output_channel: "slack:#marketing-agents"
+    prompt_file: marketing/m2_message_testing.md
+    enabled: true
+
+  - id: m3
+    name: Content Generation
+    engine: marketing
+    tier: deep_dive
+    architecture: temporal_langgraph_crewai
+    trigger: { type: cron, schedule: "0 9 * * *" }  # Daily 9am
+    output_channel: "slack:#marketing-agents"
+    prompt_file: marketing/m3_content_generation.md
+    enabled: true
+    max_tokens: 8192
+    crew_config:
+      agents: [researcher, writer, editor]
+      process: sequential
+    graph_config:
+      nodes: [research, outline, draft, polish]
+      checkpointed: true
+
+  - id: m4
+    name: Content Repurposing
+    engine: marketing
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: event, event_source: "m3:complete" }
+    output_channel: "slack:#marketing-agents"
+    prompt_file: marketing/m4_content_repurposing.md
+    enabled: true
+
+  - id: m5
+    name: Distribution
+    engine: marketing
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: event, event_source: "m4:complete" }
+    output_channel: "slack:#marketing-agents"
+    prompt_file: marketing/m5_distribution.md
+    enabled: true
+
+  - id: m6
+    name: Journey Optimization
+    engine: marketing
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 8 * * 5" }  # Friday 8am
+    output_channel: "slack:#marketing-agents"
+    prompt_file: marketing/m6_journey_optimization.md
+    enabled: true
+
+  # ═══════════════════════════════════════════
+  # ENGINE 2: SALES (5 agents)
+  # ═══════════════════════════════════════════
+
+  - id: s1
+    name: Lead Qualification
+    engine: sales
+    tier: deep_dive
+    architecture: temporal_langgraph_crewai
+    trigger: { type: webhook, event_source: "hubspot:new_lead" }
+    output_channel: "slack:#sales-agents"
+    prompt_file: sales/s1_lead_qualification.md
+    enabled: true
+    model: claude-sonnet-4-5-20250929
+    max_tokens: 4096
+    temperature: 0.3
+    crew_config:
+      agents: [enricher, scorer, router]
+      process: sequential
+    graph_config:
+      nodes: [enrich, score, route, update_crm]
+      checkpointed: true
+
+  - id: s2
+    name: Buyer Intelligence
+    engine: sales
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 7 * * *" }  # Daily 7am
+    output_channel: "slack:#sales-agents"
+    prompt_file: sales/s2_buyer_intelligence.md
+    enabled: true
+    max_tokens: 8192
+
+  - id: s3
+    name: Engagement
+    engine: sales
+    tier: deep_dive
+    architecture: temporal_langgraph_crewai
+    trigger: { type: event, event_source: "s1:qualified" }
+    output_channel: "slack:#sales-agents"
+    prompt_file: sales/s3_engagement.md
+    enabled: true
+    crew_config:
+      agents: [researcher, copywriter, strategist]
+      process: sequential
+    graph_config:
+      nodes: [research_buyer, generate_sequence, personalize, format]
+      checkpointed: true
+
+  - id: s4
+    name: Deal Support
+    engine: sales
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 7 * * 1,2,3,4,5" }  # Weekdays 7am
+    output_channel: "slack:#sales-agents"
+    prompt_file: sales/s4_deal_support.md
+    enabled: true
+    max_tokens: 8192
+
+  - id: s5
+    name: Nurture
+    engine: sales
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: event, event_source: "s1:nurture" }
+    output_channel: "slack:#sales-agents"
+    prompt_file: sales/s5_nurture.md
+    enabled: true
+
+  # ═══════════════════════════════════════════
+  # ENGINE 3: CUSTOMER SUCCESS (5 agents)
+  # ═══════════════════════════════════════════
+
+  - id: c1
+    name: Onboarding
+    engine: cs
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: webhook, event_source: "hubspot:deal_won" }
+    output_channel: "slack:#cs-agents"
+    prompt_file: cs/c1_onboarding.md
+    enabled: true
+
+  - id: c2
+    name: Success Advisor
+    engine: cs
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 10 * * 2" }  # Tuesday 10am
+    output_channel: "slack:#cs-agents"
+    prompt_file: cs/c2_success_advisor.md
+    enabled: true
+    max_tokens: 8192
+
+  - id: c3
+    name: Health Intelligence
+    engine: cs
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 2 * * *" }  # Daily 2am
+    output_channel: "slack:#cs-agents"
+    prompt_file: cs/c3_health_intelligence.md
+    enabled: true
+
+  - id: c4
+    name: Expansion
+    engine: cs
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 9 * * 3" }  # Wednesday 9am
+    output_channel: "slack:#cs-agents"
+    prompt_file: cs/c4_expansion.md
+    enabled: true
+
+  - id: c5
+    name: Customer Voice
+    engine: cs
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 8 * * 5" }  # Friday 8am
+    output_channel: "slack:#cs-agents"
+    prompt_file: cs/c5_customer_voice.md
+    enabled: true
+    max_tokens: 8192
+
+  # ═══════════════════════════════════════════
+  # REVENUE INTELLIGENCE (4 agents)
+  # ═══════════════════════════════════════════
+
+  - id: r1
+    name: Funnel Monitor
+    engine: intelligence
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 6 * * *" }  # Daily 6am
+    output_channel: "slack:#revenue-intelligence"
+    prompt_file: intelligence/r1_funnel_monitor.md
+    enabled: true
+
+  - id: r2
+    name: Deal Risk & Forecast
+    engine: intelligence
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 7 * * 1,2,3,4,5" }  # Weekdays 7am
+    output_channel: "slack:#revenue-intelligence"
+    prompt_file: intelligence/r2_deal_risk_forecast.md
+    enabled: true
+    max_tokens: 8192
+
+  - id: r3
+    name: Conversation Analysis
+    engine: intelligence
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: cron, schedule: "0 8 * * 1" }  # Monday 8am
+    output_channel: "slack:#revenue-intelligence"
+    prompt_file: intelligence/r3_conversation_analysis.md
+    enabled: true
+    max_tokens: 8192
+
+  - id: r4
+    name: NL Revenue Interface
+    engine: intelligence
+    tier: validation
+    architecture: temporal_crewai
+    trigger: { type: on_demand }
+    output_channel: "slack:#revenue-intelligence"
+    prompt_file: intelligence/r4_nl_revenue_interface.md
+    enabled: true
+    max_tokens: 4096
+    temperature: 0.3

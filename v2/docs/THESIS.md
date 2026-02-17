@@ -1,9 +1,10 @@
 # OpenVibe V2: Thesis
 
-> The starting point for all V2 design documents.
+> **ARCHIVED — See `v4/docs/THESIS.md` for current version.**
+> **V2 design principles extracted to `v4/docs/DESIGN-PRINCIPLES.md`.**
 > Created: 2026-02-09
 > Last updated: 2026-02-10
-> Status: Active
+> Status: Archived (consolidated into V4)
 
 ---
 

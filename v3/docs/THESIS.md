@@ -1,7 +1,8 @@
 # OpenVibe V3: Thesis
 
+> **ARCHIVED — See `v4/docs/THESIS.md` for current version.**
 > Date: 2026-02-11
-> Status: Draft (In Progress)
+> Status: Archived (consolidated into V4)
 > Purpose: Core thesis for V3 - dogfood-first, infrastructure + playbooks
 
 ---

@@ -1,9 +1,9 @@
 # Vibe AI Ops - Progress Tracker
 
-> **ARCHIVED — See `v4/vibe-ai-adoption/PROGRESS.md` for current version.**
 > Started: 2026-02-15
-> Status: Archived (code + docs moved to v4/)
-> Stack: Temporal + LangGraph + Anthropic SDK
+> Status: **Operator pattern implemented. 116 tests passing.**
+> Stack: Python 3.13, Temporal + LangGraph + Anthropic SDK
+> Docs: `v4/docs/` (thesis, design, principles, proposed)
 
 ---
 
@@ -11,7 +11,7 @@
 
 2-layer stack: **Temporal** (scheduling) + **LangGraph** (stateful workflows) + **Anthropic SDK** (Claude API calls)
 
-**Operator pattern:** 5 persistent operators with identity, shared state, triggers, and config-driven workflows. See `docs/OPERATOR-DESIGN.md`.
+**Operator pattern:** 5 persistent operators with identity, shared state, triggers, and config-driven workflows. See `v4/docs/DESIGN.md`.
 
 ## Quick Stats
 

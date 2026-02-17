@@ -1,0 +1,351 @@
+# config/operators.yaml
+# 5 operators replacing 20 flat agents — Temporal + LangGraph + Anthropic SDK
+# No CrewAI. All LLM nodes use call_claude() via shared/claude_client.py.
+
+operators:
+  # ═══════════════════════════════════════════
+  # COMPANY INTELLIGENCE (Smoke Test Operator)
+  # ═══════════════════════════════════════════
+  - id: company_intel
+    name: "Company Intelligence"
+    owner: "Sales / Strategy"
+    description: "On-demand company research and prospect qualification"
+    output_channels: ["slack:#revenue-intelligence"]
+    state_schema: "vibe_ai_ops.operators.company_intel.state.CompanyIntelState"
+    triggers:
+      - id: query
+        type: on_demand
+        workflow: research
+        description: "Research a company on demand"
+    workflows:
+      - id: research
+        description: "Research company, analyze prospect quality, produce report"
+        timeout_minutes: 5
+        nodes:
+          - { id: research, type: llm, model: claude-haiku-4-5-20251001 }
+          - { id: analyze, type: llm, model: claude-haiku-4-5-20251001 }
+          - { id: decide, type: logic }
+          - { id: report, type: logic }
+
+  # ═══════════════════════════════════════════
+  # REVENUE OPERATIONS (Most Complex)
+  # ═══════════════════════════════════════════
+  - id: revenue_ops
+    name: "Revenue Operations"
+    owner: "VP Sales"
+    description: "Manages the full revenue pipeline — from lead to close"
+    output_channels: ["slack:#sales-agents"]
+    state_schema: "vibe_ai_ops.operators.revenue_ops.state.RevenueOpsState"
+    triggers:
+      - id: new_lead
+        type: webhook
+        source: hubspot:new_lead
+        workflow: lead_qualification
+        description: "New lead enters HubSpot"
+      - id: lead_qualified
+        type: event
+        source: self:lead_qualified
+        workflow: engagement
+        description: "Lead scored and qualified for outreach"
+      - id: lead_nurture
+        type: event
+        source: self:lead_nurture
+        workflow: nurture_sequence
+        description: "Lead routed to nurture track"
+      - id: daily_intel
+        type: cron
+        schedule: "0 7 * * *"
+        workflow: buyer_intelligence
+        description: "Daily scan of buyer signals"
+      - id: weekday_deals
+        type: cron
+        schedule: "0 7 * * 1-5"
+        workflow: deal_support
+        description: "Weekday deal risk assessment"
+    workflows:
+      - id: lead_qualification
+        description: "Score and route incoming leads"
+        timeout_minutes: 5
+        nodes:
+          - { id: enrich, type: llm, model: claude-haiku-4-5-20251001 }
+          - { id: score, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: sales/s1_lead_qualification.md }
+          - { id: route, type: logic }
+          - { id: update_crm, type: logic }
+
+      - id: engagement
+        description: "Generate personalized outreach for qualified leads"
+        timeout_minutes: 10
+        nodes:
+          - { id: research_buyer, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: sales/s3_engagement.md }
+          - { id: generate_sequence, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: sales/s3_engagement.md }
+          - { id: personalize, type: llm, model: claude-haiku-4-5-20251001 }
+          - { id: format, type: logic }
+
+      - id: nurture_sequence
+        description: "Multi-day drip nurture for warm leads"
+        durable: true
+        max_duration_days: 42
+        timeout_minutes: 5
+        nodes:
+          - { id: assess, type: llm, model: claude-haiku-4-5-20251001, prompt_file: sales/s5_nurture.md }
+          - { id: generate, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: sales/s5_nurture.md }
+          - { id: record, type: logic }
+          - { id: evaluate, type: logic }
+
+      - id: buyer_intelligence
+        description: "Daily scan of buyer signals and market moves"
+        timeout_minutes: 3
+        nodes:
+          - { id: scan, type: logic }
+          - { id: analyze, type: llm, model: claude-haiku-4-5-20251001, prompt_file: sales/s2_buyer_intelligence.md }
+          - { id: brief, type: llm, model: claude-haiku-4-5-20251001 }
+
+      - id: deal_support
+        description: "Weekday deal analysis and risk assessment"
+        timeout_minutes: 3
+        nodes:
+          - { id: pull_deals, type: logic }
+          - { id: assess_risk, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: sales/s4_deal_support.md }
+          - { id: generate_actions, type: llm, model: claude-haiku-4-5-20251001 }
+
+  # ═══════════════════════════════════════════
+  # CONTENT ENGINE
+  # ═══════════════════════════════════════════
+  - id: content_engine
+    name: "Content Engine"
+    owner: "Marketing Lead"
+    description: "Produces, repurposes, and distributes marketing content"
+    output_channels: ["slack:#marketing-agents"]
+    state_schema: "vibe_ai_ops.operators.content_engine.state.ContentEngineState"
+    triggers:
+      - id: weekly_research
+        type: cron
+        schedule: "0 9 * * 1"
+        workflow: segment_research
+        description: "Monday segment research"
+      - id: message_testing
+        type: cron
+        schedule: "0 10 * * 1,4"
+        workflow: message_testing
+        description: "Mon/Thu message variant testing"
+      - id: daily_content
+        type: cron
+        schedule: "0 9 * * *"
+        workflow: content_generation
+        description: "Daily content production"
+      - id: content_ready
+        type: event
+        source: self:content_generated
+        workflow: repurposing
+        description: "Repurpose when new content is ready"
+      - id: repurposed_ready
+        type: event
+        source: self:content_repurposed
+        workflow: distribution
+        description: "Distribute when repurposing is done"
+      - id: weekly_optimization
+        type: cron
+        schedule: "0 8 * * 5"
+        workflow: journey_optimization
+        description: "Friday journey optimization"
+    workflows:
+      - id: segment_research
+        description: "Research and analyze market segments"
+        timeout_minutes: 5
+        nodes:
+          - { id: gather_data, type: logic }
+          - { id: analyze_segments, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: marketing/m1_segment_research.md }
+          - { id: report, type: llm, model: claude-haiku-4-5-20251001 }
+
+      - id: message_testing
+        description: "Generate and evaluate message variants"
+        timeout_minutes: 5
+        nodes:
+          - { id: generate_variants, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: marketing/m2_message_testing.md }
+          - { id: evaluate, type: llm, model: claude-haiku-4-5-20251001 }
+          - { id: recommend, type: logic }
+
+      - id: content_generation
+        description: "Research, draft, and polish content"
+        timeout_minutes: 10
+        nodes:
+          - { id: research, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: marketing/m3_content_generation.md }
+          - { id: draft, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: marketing/m3_content_generation.md }
+          - { id: polish, type: llm, model: claude-haiku-4-5-20251001 }
+
+      - id: repurposing
+        description: "Adapt content across formats"
+        timeout_minutes: 5
+        nodes:
+          - { id: analyze_content, type: logic }
+          - { id: adapt_formats, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: marketing/m4_content_repurposing.md }
+          - { id: finalize, type: logic }
+
+      - id: distribution
+        description: "Select channels and schedule distribution"
+        timeout_minutes: 3
+        nodes:
+          - { id: select_channels, type: logic }
+          - { id: schedule_posts, type: logic }
+          - { id: report, type: llm, model: claude-haiku-4-5-20251001, prompt_file: marketing/m5_distribution.md }
+
+      - id: journey_optimization
+        description: "Analyze funnel and recommend improvements"
+        timeout_minutes: 5
+        nodes:
+          - { id: collect_metrics, type: logic }
+          - { id: analyze_funnel, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: marketing/m6_journey_optimization.md }
+          - { id: recommend, type: llm, model: claude-haiku-4-5-20251001 }
+
+  # ═══════════════════════════════════════════
+  # CUSTOMER SUCCESS
+  # ═══════════════════════════════════════════
+  - id: customer_success
+    name: "Customer Success"
+    owner: "CS Lead"
+    description: "Manages customer health, onboarding, expansion, and voice-of-customer"
+    output_channels: ["slack:#cs-agents"]
+    state_schema: "vibe_ai_ops.operators.customer_success.state.CustomerSuccessState"
+    triggers:
+      - id: deal_won
+        type: webhook
+        source: hubspot:deal_won
+        workflow: onboarding
+        description: "New customer won — start onboarding"
+      - id: weekly_advisory
+        type: cron
+        schedule: "0 10 * * 2"
+        workflow: success_advisory
+        description: "Tuesday account reviews"
+      - id: daily_health
+        type: cron
+        schedule: "0 2 * * *"
+        workflow: health_monitoring
+        description: "Nightly health scoring"
+      - id: weekly_expansion
+        type: cron
+        schedule: "0 9 * * 3"
+        workflow: expansion_scan
+        description: "Wednesday expansion opportunities"
+      - id: weekly_voice
+        type: cron
+        schedule: "0 8 * * 5"
+        workflow: customer_voice
+        description: "Friday voice-of-customer analysis"
+      - id: revenue_escalation
+        type: event
+        source: revenue_ops:deal_at_risk
+        workflow: urgent_review
+        description: "Urgent review from Revenue Ops escalation"
+    workflows:
+      - id: onboarding
+        description: "Create onboarding plan for new customer"
+        timeout_minutes: 5
+        nodes:
+          - { id: create_plan, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: cs/c1_onboarding.md }
+          - { id: setup_milestones, type: logic }
+          - { id: send_welcome, type: logic }
+
+      - id: success_advisory
+        description: "Review accounts and generate action playbooks"
+        timeout_minutes: 5
+        nodes:
+          - { id: review_accounts, type: logic }
+          - { id: identify_actions, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: cs/c2_success_advisor.md }
+          - { id: generate_playbooks, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: cs/c2_success_advisor.md }
+
+      - id: health_monitoring
+        description: "Score customer health and flag risks"
+        timeout_minutes: 3
+        nodes:
+          - { id: pull_signals, type: logic }
+          - { id: score_health, type: llm, model: claude-haiku-4-5-20251001, prompt_file: cs/c3_health_intelligence.md }
+          - { id: flag_risks, type: logic }
+
+      - id: expansion_scan
+        description: "Identify upsell/expansion opportunities"
+        timeout_minutes: 5
+        nodes:
+          - { id: analyze_usage, type: logic }
+          - { id: identify_opportunities, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: cs/c4_expansion.md }
+          - { id: draft_proposals, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: cs/c4_expansion.md }
+
+      - id: customer_voice
+        description: "Collect and analyze customer feedback themes"
+        timeout_minutes: 5
+        nodes:
+          - { id: collect_feedback, type: logic }
+          - { id: analyze_themes, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: cs/c5_customer_voice.md }
+          - { id: report, type: llm, model: claude-haiku-4-5-20251001 }
+
+      - id: urgent_review
+        description: "Assess and respond to escalated deal risks"
+        timeout_minutes: 3
+        nodes:
+          - { id: assess_situation, type: llm, model: claude-haiku-4-5-20251001 }
+          - { id: recommend_action, type: llm, model: claude-sonnet-4-5-20250929 }
+          - { id: alert_team, type: logic }
+
+  # ═══════════════════════════════════════════
+  # MARKET INTELLIGENCE
+  # ═══════════════════════════════════════════
+  - id: market_intel
+    name: "Market Intelligence"
+    owner: "CEO / Strategy"
+    description: "Monitors funnel, forecasts revenue, analyzes conversations, answers ad-hoc queries"
+    output_channels: ["slack:#revenue-intelligence"]
+    state_schema: "vibe_ai_ops.operators.market_intel.state.MarketIntelState"
+    triggers:
+      - id: daily_funnel
+        type: cron
+        schedule: "0 6 * * *"
+        workflow: funnel_monitor
+        description: "Daily funnel health check"
+      - id: weekday_forecast
+        type: cron
+        schedule: "0 7 * * 1-5"
+        workflow: deal_risk_forecast
+        description: "Weekday deal risk forecasting"
+      - id: weekly_conversations
+        type: cron
+        schedule: "0 8 * * 1"
+        workflow: conversation_analysis
+        description: "Monday conversation pattern analysis"
+      - id: query
+        type: on_demand
+        workflow: nl_query
+        description: "Natural language revenue query"
+    workflows:
+      - id: funnel_monitor
+        description: "Pull metrics, detect anomalies, produce brief"
+        timeout_minutes: 3
+        nodes:
+          - { id: pull_metrics, type: logic }
+          - { id: detect_anomalies, type: llm, model: claude-haiku-4-5-20251001, prompt_file: intelligence/r1_funnel_monitor.md }
+          - { id: brief, type: llm, model: claude-haiku-4-5-20251001 }
+
+      - id: deal_risk_forecast
+        description: "Model deal risks and forecast revenue"
+        timeout_minutes: 5
+        nodes:
+          - { id: pull_deals, type: logic }
+          - { id: model_risk, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: intelligence/r2_deal_risk_forecast.md }
+          - { id: forecast, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: intelligence/r2_deal_risk_forecast.md }
+          - { id: report, type: llm, model: claude-haiku-4-5-20251001 }
+
+      - id: conversation_analysis
+        description: "Extract patterns from sales conversations"
+        timeout_minutes: 10
+        nodes:
+          - { id: pull_transcripts, type: logic }
+          - { id: extract_patterns, type: llm, model: claude-sonnet-4-5-20250929, prompt_file: intelligence/r3_conversation_analysis.md }
+          - { id: summarize, type: llm, model: claude-haiku-4-5-20251001 }
+
+      - id: nl_query
+        description: "Parse question, query data, reason, respond"
+        timeout_minutes: 3
+        nodes:
+          - { id: parse_question, type: llm, model: claude-haiku-4-5-20251001, prompt_file: intelligence/r4_nl_revenue_interface.md }
+          - { id: query_data, type: logic }
+          - { id: reason, type: llm, model: claude-sonnet-4-5-20250929 }
+          - { id: respond, type: llm, model: claude-haiku-4-5-20251001 }
