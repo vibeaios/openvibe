@@ -10,9 +10,9 @@
 **Phase:** V4 — Vibe AI Adoption
 **Status:** 5 operators, 22 workflows, 80 nodes. 116/116 tests passing.
 **Stack:** Python 3.13, Temporal + LangGraph + Anthropic SDK (direct `call_claude()`, no CrewAI)
-**Next:** SDK V1 implementation (4-layer architecture) → T25 (smoke test) → T26 (go live)
+**Next:** T25 (smoke test with real APIs) → T26 (go live)
 **Project dir:** `v4/vibe-ai-adoption/` — read its `PROGRESS.md` for implementation details
-**SDK dir:** `v4/openvibe-sdk/` — 4-layer SDK (design approved, pending implementation)
+**SDK dir:** `v4/openvibe-sdk/` — **SDK V1 complete** (87/87 tests, 12 commits)
 **Docs:** `v4/docs/` — thesis, design, principles, proposed designs
 
 ---
@@ -30,8 +30,9 @@ All docs consolidated into `v4/docs/`:
 | `proposed/COGNITIVE-ARCHITECTURE.md` | Proposed | Agent identity, 5-level memory, decision authority |
 | `proposed/INTER-OPERATOR-COMMS.md` | Proposed | NATS event bus + KV store |
 | `proposed/OPERATOR-SDK.md` | Superseded by plans/ | Declarative framework, 7 decorators, HTTP API |
-| `plans/2026-02-17-operator-sdk-design.md` | **Design approved** | Operator layer: extract + @llm_node + @agent_node |
-| `plans/2026-02-17-sdk-4-layer-architecture.md` | **Design approved** | 4-layer SDK: Role + Operator + Primitives + Infrastructure |
+| `plans/2026-02-17-operator-sdk-design.md` | **Implemented** | Operator layer: extract + @llm_node + @agent_node |
+| `plans/2026-02-17-sdk-4-layer-architecture.md` | **Implemented** | 4-layer SDK: Role + Operator + Primitives + Infrastructure |
+| `plans/2026-02-17-sdk-v1-implementation.md` | **Complete** | 10 tasks, 87 tests, full TDD implementation plan |
 | `strategy/DOGFOOD-GTM.md` | Proposed | 6-month validation strategy |
 | `reference/INTERFACE-DESIGN.md` | Final | Discord-inspired UI/UX |
 | `reference/EVOLUTION.md` | Reference | V1→V2→V3→V4 evolution mapping |
@@ -44,6 +45,7 @@ All docs consolidated into `v4/docs/`:
 - Merged V2 design principles + V3 thesis + V3 implementation into single source of truth
 - 5 operators replace 20 flat agents. CrewAI fully removed.
 - All docs in `v4/docs/`, all code in `v4/vibe-ai-adoption/`
+- **SDK V1 complete** (2026-02-17): 4-layer framework at `v4/openvibe-sdk/`, 87 tests, 6 public exports (Operator, llm_node, agent_node, Role, OperatorRuntime, RoleRuntime)
 
 ### V3 (Archived) — Implementation
 - Built Temporal + LangGraph + CrewAI stack → then removed CrewAI
@@ -81,4 +83,4 @@ All docs consolidated into `v4/docs/`:
 
 ---
 
-*Last updated: 2026-02-17T05:16Z*
+*Last updated: 2026-02-17T05:58Z*
