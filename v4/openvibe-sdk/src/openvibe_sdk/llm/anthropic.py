@@ -36,15 +36,17 @@ class AnthropicProvider:
 
         response = self._client.messages.create(**kwargs)
 
-        content = ""
+        text_parts: list[str] = []
         tool_calls: list[ToolCall] = []
         for block in response.content:
             if block.type == "text":
-                content = block.text
+                text_parts.append(block.text)
             elif block.type == "tool_use":
                 tool_calls.append(
                     ToolCall(id=block.id, name=block.name, input=block.input)
                 )
+
+        content = "\n".join(text_parts) if text_parts else ""
 
         return LLMResponse(
             content=content,

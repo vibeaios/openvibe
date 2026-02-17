@@ -25,7 +25,7 @@ class FakeLLM:
         )
 
 
-class TestOperator(Operator):
+class SampleOperator(Operator):
     operator_id = "test_op"
 
     @llm_node(model="sonnet", temperature=0.3, output_key="result")
@@ -35,26 +35,26 @@ class TestOperator(Operator):
 
 
 def test_operator_has_id():
-    op = TestOperator()
+    op = SampleOperator()
     assert op.operator_id == "test_op"
 
 
 def test_operator_accepts_llm():
     llm = FakeLLM()
-    op = TestOperator(llm=llm)
+    op = SampleOperator(llm=llm)
     assert op.llm is llm
 
 
 def test_llm_node_uses_docstring_as_system_prompt():
     llm = FakeLLM()
-    op = TestOperator(llm=llm)
+    op = SampleOperator(llm=llm)
     op.analyze({"input": "hello"})
     assert llm.last_call["system"] == "You are a test analyst."
 
 
 def test_llm_node_uses_return_as_user_message():
     llm = FakeLLM()
-    op = TestOperator(llm=llm)
+    op = SampleOperator(llm=llm)
     op.analyze({"input": "hello"})
     messages = llm.last_call["messages"]
     assert len(messages) == 1
@@ -64,7 +64,7 @@ def test_llm_node_uses_return_as_user_message():
 
 def test_llm_node_passes_model_and_temperature():
     llm = FakeLLM()
-    op = TestOperator(llm=llm)
+    op = SampleOperator(llm=llm)
     op.analyze({"input": "x"})
     assert llm.last_call["model"] == "sonnet"
     assert llm.last_call["temperature"] == 0.3
@@ -72,7 +72,7 @@ def test_llm_node_passes_model_and_temperature():
 
 def test_llm_node_writes_output_key():
     llm = FakeLLM(response_content="analysis result")
-    op = TestOperator(llm=llm)
+    op = SampleOperator(llm=llm)
     state = {"input": "hello"}
     result = op.analyze(state)
     assert result["result"] == "analysis result"
@@ -81,7 +81,7 @@ def test_llm_node_writes_output_key():
 def test_llm_node_auto_parses_json():
     json_response = json.dumps({"score": 85, "label": "high"})
     llm = FakeLLM(response_content=json_response)
-    op = TestOperator(llm=llm)
+    op = SampleOperator(llm=llm)
     state = {"input": "x"}
     result = op.analyze(state)
     assert isinstance(result["result"], dict)
@@ -90,7 +90,7 @@ def test_llm_node_auto_parses_json():
 
 def test_llm_node_returns_raw_string_on_non_json():
     llm = FakeLLM(response_content="just plain text")
-    op = TestOperator(llm=llm)
+    op = SampleOperator(llm=llm)
     state = {"input": "x"}
     result = op.analyze(state)
     assert result["result"] == "just plain text"
@@ -98,7 +98,7 @@ def test_llm_node_returns_raw_string_on_non_json():
 
 def test_llm_node_returns_state():
     llm = FakeLLM()
-    op = TestOperator(llm=llm)
+    op = SampleOperator(llm=llm)
     state = {"input": "x", "existing": "preserved"}
     result = op.analyze(state)
     assert result["existing"] == "preserved"
@@ -120,6 +120,6 @@ def test_llm_node_no_output_key():
 
 
 def test_llm_node_marks_method():
-    op = TestOperator()
+    op = SampleOperator()
     assert hasattr(op.analyze, "_is_llm_node")
     assert op.analyze._is_llm_node is True

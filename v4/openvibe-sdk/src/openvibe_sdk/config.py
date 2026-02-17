@@ -16,6 +16,8 @@ def load_operator_configs(
     """Load operator configs from a YAML file."""
     with open(config_path) as f:
         data = yaml.safe_load(f)
+    if not isinstance(data, dict) or "operators" not in data:
+        raise ValueError(f"Invalid config: expected 'operators' key in {config_path}")
     configs = [OperatorConfig(**op) for op in data["operators"]]
     if enabled_only:
         configs = [c for c in configs if c.enabled]

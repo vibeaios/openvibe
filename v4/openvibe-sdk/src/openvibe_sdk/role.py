@@ -43,6 +43,11 @@ class Role:
     soul: str = ""
     operators: list[type[Operator]] = []
 
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        if "operators" not in cls.__dict__:
+            cls.operators = []
+
     def __init__(
         self,
         llm: LLMProvider | None = None,
