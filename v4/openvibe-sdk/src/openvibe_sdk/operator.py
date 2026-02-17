@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import functools
 import json
+import time
+import uuid
+from datetime import datetime, timezone
 from typing import Any
 
 
@@ -15,9 +18,13 @@ class Operator:
 
     operator_id: str = ""
 
-    def __init__(self, llm: Any = None, config: Any = None) -> None:
+    def __init__(
+        self, llm: Any = None, config: Any = None, memory_assembler: Any = None
+    ) -> None:
         self.llm = llm
         self.config = config
+        self._memory_assembler = memory_assembler
+        self._episode_recorder = None  # set by Role
 
 
 def llm_node(
@@ -25,6 +32,7 @@ def llm_node(
     temperature: float = 0.7,
     max_tokens: int = 4096,
     output_key: str | None = None,
+    memory_scope: dict | None = None,
 ) -> Any:
     """Decorator: single LLM call.
 
@@ -32,6 +40,7 @@ def llm_node(
     - Return value = user message
     - Auto JSON parse if response is valid JSON
     - state[output_key] = result (if output_key set)
+    - memory_scope = optional dict for memory assembly + episode recording
     """
 
     def decorator(method: Any) -> Any:
@@ -40,6 +49,16 @@ def llm_node(
             system_prompt = (method.__doc__ or "").strip()
             user_message = method(self, state)
 
+            # Resolve memory scope and assemble context
+            resolved_scope = None
+            if memory_scope:
+                resolved_scope = _resolve_scope(memory_scope, state)
+                assembler = getattr(self, "_memory_assembler", None)
+                if assembler:
+                    context = assembler.assemble(resolved_scope)
+                    system_prompt = f"{system_prompt}\n\n{context}"
+
+            t0 = time.monotonic()
             response = self.llm.call(
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_message}],
@@ -47,11 +66,17 @@ def llm_node(
                 max_tokens=max_tokens,
                 temperature=temperature,
             )
+            duration_ms = int((time.monotonic() - t0) * 1000)
 
             result = _try_json_parse(response.content)
 
             if output_key:
                 state[output_key] = result
+
+            # Record episode
+            _record_episode(
+                self, method.__name__, resolved_scope, response, duration_ms
+            )
 
             return state
 
@@ -60,6 +85,7 @@ def llm_node(
             "model": model,
             "temperature": temperature,
             "output_key": output_key,
+            "memory_scope": memory_scope,
         }
         return wrapper
 
@@ -74,6 +100,48 @@ def _try_json_parse(text: str) -> Any:
         return text
 
 
+def _resolve_scope(memory_scope: dict, state: dict) -> dict:
+    """Resolve a memory_scope dict, calling any callables with state."""
+    resolved = {}
+    for key, value in memory_scope.items():
+        resolved[key] = value(state) if callable(value) else value
+    return resolved
+
+
+def _record_episode(
+    operator: Operator,
+    node_name: str,
+    resolved_scope: dict | None,
+    response: Any,
+    duration_ms: int,
+) -> None:
+    """Record an Episode via the operator's _episode_recorder if set."""
+    recorder = getattr(operator, "_episode_recorder", None)
+    if not recorder:
+        return
+
+    from openvibe_sdk.memory.types import Episode
+
+    episode = Episode(
+        id=str(uuid.uuid4()),
+        agent_id="",
+        operator_id=operator.operator_id,
+        node_name=node_name,
+        timestamp=datetime.now(timezone.utc),
+        action=node_name,
+        input_summary="",
+        output_summary=response.content[:200] if response.content else "",
+        outcome={},
+        duration_ms=duration_ms,
+        tokens_in=getattr(response, "tokens_in", 0),
+        tokens_out=getattr(response, "tokens_out", 0),
+        entity=(resolved_scope or {}).get("entity", ""),
+        domain=(resolved_scope or {}).get("domain", ""),
+        tags=(resolved_scope or {}).get("tags", []),
+    )
+    recorder(episode)
+
+
 def agent_node(
     tools: list | None = None,
     model: str = "sonnet",
@@ -81,12 +149,14 @@ def agent_node(
     max_tokens: int = 4096,
     output_key: str | None = None,
     max_steps: int | None = None,
+    memory_scope: dict | None = None,
 ) -> Any:
     """Decorator: Pi-style agent loop.
 
     - Tools = plain Python functions (auto-converted to Anthropic schema)
     - Loops until LLM responds with text (no tool calls)
     - Optional max_steps safety valve
+    - memory_scope = optional dict for memory assembly + episode recording
     """
     from openvibe_sdk.tools import function_to_schema
 
@@ -99,11 +169,21 @@ def agent_node(
             system_prompt = (method.__doc__ or "").strip()
             user_message = method(self, state)
 
+            # Resolve memory scope and assemble context
+            resolved_scope = None
+            if memory_scope:
+                resolved_scope = _resolve_scope(memory_scope, state)
+                assembler = getattr(self, "_memory_assembler", None)
+                if assembler:
+                    context = assembler.assemble(resolved_scope)
+                    system_prompt = f"{system_prompt}\n\n{context}"
+
             messages: list[dict] = [
                 {"role": "user", "content": user_message}
             ]
             steps = 0
             last_response = None
+            t0 = time.monotonic()
 
             while True:
                 if max_steps is not None and steps >= max_steps:
@@ -123,6 +203,15 @@ def agent_node(
                     result = _try_json_parse(response.content)
                     if output_key:
                         state[output_key] = result
+
+                    duration_ms = int((time.monotonic() - t0) * 1000)
+                    _record_episode(
+                        self,
+                        method.__name__,
+                        resolved_scope,
+                        response,
+                        duration_ms,
+                    )
                     return state
 
                 # Build assistant message with tool_use blocks
@@ -169,6 +258,15 @@ def agent_node(
             # max_steps reached — use last response
             if last_response and output_key:
                 state[output_key] = last_response.content
+
+            duration_ms = int((time.monotonic() - t0) * 1000)
+            _record_episode(
+                self,
+                method.__name__,
+                resolved_scope,
+                last_response,
+                duration_ms,
+            )
             return state
 
         wrapper._is_agent_node = True
@@ -177,6 +275,7 @@ def agent_node(
             "tools": [t.__name__ for t in (tools or [])],
             "output_key": output_key,
             "max_steps": max_steps,
+            "memory_scope": memory_scope,
         }
         return wrapper
 
