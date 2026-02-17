@@ -118,16 +118,27 @@ class RoleRuntime:
         roles: list[type[Role]],
         llm: LLMProvider,
         memory: MemoryProvider | None = None,
+        workspace: Any = None,
         scheduler: Any = None,
     ) -> None:
         self.llm = llm
         self.memory = memory
+        self.workspace = workspace
         self.scheduler = scheduler
         self._roles: dict[str, Role] = {}
         self._workflow_factories: dict[str, dict[str, Callable]] = {}
 
         for role_class in roles:
-            role = role_class(llm=llm, memory=memory)
+            # V2: auto-create AgentMemory if role declares clearance
+            agent_mem = None
+            if hasattr(role_class, "clearance") and role_class.clearance:
+                from openvibe_sdk.memory.agent_memory import AgentMemory
+
+                agent_mem = AgentMemory(
+                    agent_id=role_class.role_id,
+                    workspace=workspace,
+                )
+            role = role_class(llm=llm, memory=memory, agent_memory=agent_mem)
             self._roles[role.role_id] = role
 
     def get_role(self, role_id: str) -> Role:
