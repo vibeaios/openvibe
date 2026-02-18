@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openvibe-runtime"
+version = "0.1.0"
+description = "LangGraph execution runtime for openvibe-sdk"
+requires-python = ">=3.12"
+dependencies = [
+    "openvibe-sdk>=0.3.0",
+    "langgraph>=0.3.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.12",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openvibe_runtime"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "../openvibe-sdk/src"]
