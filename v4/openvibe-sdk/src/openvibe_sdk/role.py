@@ -12,7 +12,9 @@ from openvibe_sdk.memory.agent_memory import AgentMemory
 from openvibe_sdk.memory.assembler import MemoryAssembler
 from openvibe_sdk.memory.filesystem import MemoryFilesystem
 from openvibe_sdk.memory.types import Episode, Insight
-from openvibe_sdk.models import AuthorityConfig
+from openvibe_sdk.models import (
+    AuthorityConfig, Event, Objective, RoleLifecycle, TrustProfile,
+)
 from openvibe_sdk.operator import Operator
 
 
@@ -53,6 +55,11 @@ class Role:
     authority: AuthorityConfig | None = None
     clearance: ClearanceProfile | None = None
 
+    # V3 identity fields
+    workspace: str = ""
+    domains: list[str] = []
+    reports_to: str = ""
+
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
         if "operators" not in cls.__dict__:
@@ -63,12 +70,18 @@ class Role:
         llm: LLMProvider | None = None,
         agent_memory: AgentMemory | None = None,
         config: dict | None = None,
+        lifecycle: RoleLifecycle | None = None,
+        trust: TrustProfile | None = None,
+        goals: list[Objective] | None = None,
     ) -> None:
         self.llm = llm
         self.agent_memory = agent_memory
         self.config = config or {}
         self._operator_instances: dict[str, Operator] = {}
         self._memory_fs: MemoryFilesystem | None = None
+        self.lifecycle = lifecycle
+        self.trust = trust
+        self.goals = goals or []
 
     def can_act(self, action: str) -> str:
         """Check authority for an action.
@@ -184,6 +197,84 @@ class Role:
         soul_text = self._load_soul()
         parts = [p for p in [soul_text, base_prompt] if p]
         return "\n\n".join(parts)
+
+    def handle(self, event: "Event") -> "RoutingDecision":
+        """Receive event, decide action. Deterministic — no LLM call."""
+        from openvibe_sdk.models import RoutingDecision, RoleStatus
+
+        # 1. Lifecycle gate
+        if self.lifecycle is not None:
+            active_statuses = (RoleStatus.ACTIVE, RoleStatus.TESTING)
+            if self.lifecycle.status not in active_statuses:
+                return RoutingDecision(
+                    action="ignore",
+                    reason=f"Role is {self.lifecycle.status}",
+                )
+
+        # 2. Domain check
+        if self.domains and event.domain not in self.domains:
+            return RoutingDecision(
+                action="forward",
+                reason=f"Domain '{event.domain}' not in {self.domains}",
+            )
+
+        # 3. Authority check
+        authority_result = self.can_act(event.type)
+        if authority_result == "forbidden":
+            return RoutingDecision(
+                action="escalate",
+                reason=f"Action '{event.type}' is forbidden",
+                target_role_id=self.reports_to,
+                message=f"Forbidden action attempted: {event.type}",
+            )
+
+        # 4. Match operator
+        operator_id, trigger_id = self._match_operator(event)
+        if operator_id:
+            if authority_result == "needs_approval":
+                return RoutingDecision(
+                    action="escalate",
+                    reason=f"Action '{event.type}' needs approval",
+                    target_role_id=self.reports_to,
+                    operator_id=operator_id,
+                    trigger_id=trigger_id,
+                    input_data=event.payload,
+                )
+            return RoutingDecision(
+                action="delegate",
+                reason=f"Matched operator '{operator_id}'",
+                operator_id=operator_id,
+                trigger_id=trigger_id,
+                input_data=event.payload,
+            )
+
+        # 5. No operator match — escalate
+        return RoutingDecision(
+            action="escalate",
+            reason=f"No operator matched event type '{event.type}'",
+            target_role_id=self.reports_to,
+        )
+
+    def _match_operator(self, event: "Event") -> tuple[str | None, str | None]:
+        """Override in subclasses to map event.type -> (operator_id, trigger_id)."""
+        return None, None
+
+    def active_goals(self) -> list["Objective"]:
+        """Return goals with status='active'."""
+        return [g for g in self.goals if g.status == "active"]
+
+    def goal_context(self) -> str:
+        """Format active goals as string for LLM prompt injection."""
+        active = self.active_goals()
+        if not active:
+            return ""
+        lines = ["## Current Goals"]
+        for obj in active:
+            lines.append(f"- {obj.description} [{obj.status}]")
+            for kr in obj.key_results:
+                pct = int(kr.progress * 100)
+                lines.append(f"  • {kr.description}: {kr.current}/{kr.target} {kr.unit} ({pct}%)")
+        return "\n".join(lines)
 
     def _load_soul(self) -> str:
         if not self.soul:
