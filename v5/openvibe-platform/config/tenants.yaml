@@ -1,0 +1,7 @@
+tenants:
+  - id: vibe-inc
+    name: Vibe Inc
+    data_dir: data/vibe-inc
+  - id: astrocrest
+    name: Astrocrest
+    data_dir: data/astrocrest
