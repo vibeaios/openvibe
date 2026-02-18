@@ -102,3 +102,27 @@ def test_no_scheduler_field():
     """RoleRuntime in runtime package does not have scheduler field."""
     runtime = RoleRuntime(roles=[CRO], llm=FakeLLM())
     assert not hasattr(runtime, "scheduler")
+
+
+def test_testing_mode_injects_mock_llm():
+    runtime = RoleRuntime(roles=[CRO], mode="test")
+    role = runtime.get_role("cro")
+    assert role.llm is not None
+    # Mock LLM returns fixed response without real API calls
+    response = role.respond("hello")
+    assert response.content is not None
+
+
+def test_testing_mode_injects_inmemory_transport():
+    from openvibe_sdk.registry import InMemoryTransport
+
+    runtime = RoleRuntime(roles=[CRO], mode="test")
+    role = runtime.get_role("cro")
+    assert isinstance(role._transport, InMemoryTransport)
+
+
+def test_testing_mode_no_llm_required():
+    """mode='test' works without passing llm= explicitly."""
+    runtime = RoleRuntime(roles=[CRO], mode="test")
+    role = runtime.get_role("cro")
+    assert role is not None

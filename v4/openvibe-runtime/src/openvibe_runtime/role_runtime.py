@@ -4,8 +4,15 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from openvibe_sdk.llm import LLMProvider
+from openvibe_sdk.llm import LLMProvider, LLMResponse
 from openvibe_sdk.role import Role
+
+
+class _MockLLMProvider:
+    """Fixed-response LLM for test mode — no real API calls."""
+
+    def call(self, *, system: str, messages: list, **kwargs: Any) -> LLMResponse:
+        return LLMResponse(content="mock response")
 
 
 class RoleRuntime:
@@ -13,18 +20,26 @@ class RoleRuntime:
 
     Workflow factories receive an Operator instance (with Role-aware LLM).
     Factory signature: (operator: Operator) -> CompiledGraph
+
+    mode="test": auto-injects MockLLMProvider + InMemoryTransport; llm= not required.
     """
 
     def __init__(
         self,
         roles: list[type[Role]],
-        llm: LLMProvider,
+        llm: LLMProvider | None = None,
         workspace: Any = None,
+        mode: str = "live",
     ) -> None:
-        self.llm = llm
         self.workspace = workspace
         self._roles: dict[str, Role] = {}
         self._workflow_factories: dict[str, dict[str, Callable]] = {}
+
+        effective_llm: Any = llm
+        if mode == "test":
+            effective_llm = _MockLLMProvider()
+
+        self.llm = effective_llm
 
         for role_class in roles:
             from openvibe_sdk.memory.agent_memory import AgentMemory
@@ -33,7 +48,12 @@ class RoleRuntime:
                 agent_id=role_class.role_id,
                 workspace=workspace,
             )
-            role = role_class(llm=llm, agent_memory=agent_mem)
+            role = role_class(llm=effective_llm, agent_memory=agent_mem)
+
+            if mode == "test":
+                from openvibe_sdk.registry import InMemoryTransport
+                role._transport = InMemoryTransport()
+
             self._roles[role.role_id] = role
 
     def get_role(self, role_id: str) -> Role:
