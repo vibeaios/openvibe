@@ -138,6 +138,109 @@ def test_write_experience():
     assert len(results) == 1
 
 
+# --- .directory ---
+
+def test_directory_root():
+    mem = AgentMemory(agent_id="cro")
+    mem.store_insight(Insight(
+        id="ins1", agent_id="cro", content="VP sponsor predicts conversion",
+        confidence=0.9, evidence_count=5, source_episode_ids=[],
+        created_at=datetime.now(timezone.utc), domain="revenue",
+    ))
+    mem.record_episode(Episode(
+        id="ep1", agent_id="cro", operator_id="revenue_ops",
+        node_name="qualify", timestamp=datetime.now(timezone.utc),
+        action="qualify_lead", input_summary="Score Acme",
+        output_summary="Score: 85", outcome={}, duration_ms=100,
+        tokens_in=10, tokens_out=20,
+    ))
+    fs = MemoryFilesystem(role_id="cro", agent_memory=mem, soul="You are the CRO.")
+    content = fs.read("/.directory")
+    assert "identity" in content
+    assert "knowledge" in content
+    assert "experience" in content
+    assert "1 insight" in content
+    assert "1 episode" in content
+
+
+def test_directory_root_empty():
+    mem = AgentMemory(agent_id="cro")
+    fs = MemoryFilesystem(role_id="cro", agent_memory=mem)
+    content = fs.read("/.directory")
+    assert "identity" in content
+    assert "empty" in content.lower() or "0" in content
+
+
+def test_directory_knowledge():
+    mem = AgentMemory(agent_id="cro")
+    mem.store_insight(Insight(
+        id="ins1", agent_id="cro", content="VP sponsor predicts conversion",
+        confidence=0.9, evidence_count=5, source_episode_ids=[],
+        created_at=datetime.now(timezone.utc), domain="sales",
+    ))
+    mem.store_insight(Insight(
+        id="ins2", agent_id="cro", content="Webinar leads convert 2x",
+        confidence=0.8, evidence_count=3, source_episode_ids=[],
+        created_at=datetime.now(timezone.utc), domain="sales",
+    ))
+    mem.store_insight(Insight(
+        id="ins3", agent_id="cro", content="Brand voice matters",
+        confidence=0.7, evidence_count=2, source_episode_ids=[],
+        created_at=datetime.now(timezone.utc), domain="marketing",
+    ))
+    fs = MemoryFilesystem(role_id="cro", agent_memory=mem)
+    content = fs.read("/knowledge/.directory")
+    assert "sales" in content
+    assert "marketing" in content
+    # Should show counts per domain
+    assert "2" in content  # 2 sales insights
+
+
+def test_directory_knowledge_domain():
+    mem = AgentMemory(agent_id="cro")
+    mem.store_insight(Insight(
+        id="ins1", agent_id="cro", content="VP sponsor predicts conversion",
+        confidence=0.9, evidence_count=5, source_episode_ids=[],
+        created_at=datetime.now(timezone.utc), domain="sales",
+    ))
+    fs = MemoryFilesystem(role_id="cro", agent_memory=mem)
+    content = fs.read("/knowledge/sales/.directory")
+    assert "ins1" in content
+    assert "VP sponsor" in content
+
+
+def test_directory_experience():
+    mem = AgentMemory(agent_id="cro")
+    mem.record_episode(Episode(
+        id="ep1", agent_id="cro", operator_id="revenue_ops",
+        node_name="qualify", timestamp=datetime.now(timezone.utc),
+        action="qualify_lead", input_summary="Score Acme",
+        output_summary="Score: 85", outcome={}, duration_ms=100,
+        tokens_in=10, tokens_out=20,
+    ))
+    fs = MemoryFilesystem(role_id="cro", agent_memory=mem)
+    content = fs.read("/experience/.directory")
+    assert "ep1" in content
+    assert "qualify_lead" in content
+
+
+def test_directory_identity():
+    mem = AgentMemory(agent_id="cro")
+    fs = MemoryFilesystem(role_id="cro", agent_memory=mem, soul="You are the CRO. Data-driven.")
+    content = fs.read("/identity/.directory")
+    assert "soul.md" in content
+
+
+def test_directory_traces_recorded():
+    """Reading .directory should produce a read trace like any other read."""
+    mem = AgentMemory(agent_id="cro")
+    fs = MemoryFilesystem(role_id="cro", agent_memory=mem)
+    fs.read("/.directory")
+    assert len(fs.traces) == 1
+    assert fs.traces[0].action == "read"
+    assert ".directory" in fs.traces[0].path
+
+
 # --- Observable traces ---
 
 def test_traces_recorded():

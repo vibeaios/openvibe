@@ -72,13 +72,18 @@ class MemoryFilesystem:
         return entries
 
     def read(self, path: str) -> str:
-        """Read content at path."""
+        """Read content at path. Supports .directory index files."""
         start = time.monotonic()
         path = path.strip("/")
         parts = path.split("/") if path else []
         content = ""
 
-        if len(parts) >= 2 and parts[0] == "identity" and parts[1] == "soul.md":
+        # .directory index files — navigation aid
+        if not parts or (len(parts) == 1 and parts[0] == ".directory"):
+            content = self._directory_root()
+        elif parts[-1] == ".directory":
+            content = self._directory_for(parts[:-1])
+        elif len(parts) >= 2 and parts[0] == "identity" and parts[1] == "soul.md":
             content = self._soul
         elif len(parts) >= 2 and parts[0] == "knowledge":
             content = self._read_knowledge(parts[1:])
@@ -175,6 +180,108 @@ class MemoryFilesystem:
             action="write", path=f"/{path}",
             duration_ms=duration_ms,
         ))
+
+    # --- .directory generators ---
+
+    def _directory_root(self) -> str:
+        """Generate /.directory — overview of all top-level directories."""
+        insights = self._memory.recall_insights(limit=100)
+        episodes = self._memory.recall_episodes(limit=100)
+
+        # Counts
+        n_insights = len(insights)
+        n_episodes = len(episodes)
+        domains = sorted({i.domain for i in insights if i.domain})
+
+        lines = []
+        # identity
+        if self._soul:
+            first_line = self._soul.split("\n")[0][:80]
+            lines.append(f"identity/  — {first_line}")
+        else:
+            lines.append("identity/  — (empty)")
+
+        # knowledge
+        if n_insights:
+            domain_counts = {}
+            for i in insights:
+                d = i.domain or "_"
+                domain_counts[d] = domain_counts.get(d, 0) + 1
+            summary = ", ".join(f"{d} ({c})" for d, c in sorted(domain_counts.items()))
+            lines.append(f"knowledge/ — {n_insights} insight{'s' if n_insights != 1 else ''}: {summary}")
+        else:
+            lines.append("knowledge/ — (empty)")
+
+        # experience
+        if n_episodes:
+            lines.append(f"experience/ — {n_episodes} episode{'s' if n_episodes != 1 else ''}")
+        else:
+            lines.append("experience/ — (empty)")
+
+        # references
+        lines.append("references/ — (not yet available)")
+
+        return "\n".join(lines)
+
+    def _directory_for(self, parts: list[str]) -> str:
+        """Generate .directory for a sub-path."""
+        if not parts:
+            return self._directory_root()
+
+        section = parts[0]
+        if section == "identity":
+            return self._directory_identity()
+        elif section == "knowledge":
+            return self._directory_knowledge(parts[1:])
+        elif section == "experience":
+            return self._directory_experience()
+        elif section == "references":
+            return "(not yet available)"
+        return ""
+
+    def _directory_identity(self) -> str:
+        if self._soul:
+            first_line = self._soul.split("\n")[0][:80]
+            return f"soul.md — {first_line}"
+        return "(empty)"
+
+    def _directory_knowledge(self, parts: list[str]) -> str:
+        """Generate .directory for /knowledge/ or /knowledge/{domain}/."""
+        if not parts:
+            # List all domains with counts and top insight per domain
+            insights = self._memory.recall_insights(limit=100)
+            if not insights:
+                return "(empty)"
+            by_domain: dict[str, list[Insight]] = {}
+            for i in insights:
+                d = i.domain or "_"
+                by_domain.setdefault(d, []).append(i)
+            lines = []
+            for d in sorted(by_domain):
+                items = by_domain[d]
+                previews = [f'"{i.content[:50]}"' for i in items[:3]]
+                lines.append(f"{d}/ — {len(items)} insight{'s' if len(items) != 1 else ''}: {', '.join(previews)}")
+            return "\n".join(lines)
+
+        # /knowledge/{domain}/.directory — list insights in domain
+        domain = parts[0]
+        insights = self._memory.recall_insights(domain=domain, limit=50)
+        if not insights:
+            return "(empty)"
+        lines = []
+        for i in insights:
+            lines.append(f"{i.id} — \"{i.content[:60]}\" (confidence: {i.confidence})")
+        return "\n".join(lines)
+
+    def _directory_experience(self) -> str:
+        """Generate .directory for /experience/."""
+        episodes = self._memory.recall_episodes(limit=50)
+        if not episodes:
+            return "(empty)"
+        lines = []
+        for ep in episodes:
+            lines.append(f"{ep.id} — {ep.action} ({ep.operator_id}) {ep.duration_ms}ms")
+        return "\n".join(lines)
 
     # --- Private helpers ---
 
