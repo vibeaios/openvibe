@@ -127,24 +127,3 @@ def test_role_aware_llm_soul_only_with_agent_memory():
     assert "Relevant Memories" not in llm.last_system
 
 
-# --- V1 backward compat ---
-
-def test_v1_memory_still_works():
-    """V1 Role(memory=InMemoryStore()) still works."""
-    from openvibe_sdk.memory.in_memory import InMemoryStore
-
-    llm = FakeLLM()
-    memory = InMemoryStore()
-    memory.store("cro", "m1", "Webinar leads convert 2x")
-
-    class V1Role(Role):
-        role_id = "cro"
-        soul = "You are the CRO."
-        operators = [RevenueOps]
-
-    role = V1Role(llm=llm, memory=memory)
-    op = role.get_operator("revenue_ops")
-    op.qualify({"lead": "Acme"})
-
-    # V1 behavior: _RoleAwareLLM injects memories
-    assert "Webinar leads convert 2x" in llm.last_system

@@ -159,41 +159,6 @@ def test_v2_public_api_exports():
         assert export is not None
 
 
-def test_v1_backward_compat():
-    """V1 code must still work without any V2 features."""
-    from openvibe_sdk.memory.in_memory import InMemoryStore
-
-    class SimpleLLM:
-        def __init__(self):
-            self.last_system = None
-        def call(self, *, system, messages, **kwargs):
-            self.last_system = system
-            return LLMResponse(content="v1 output")
-
-    class SimpleOp(Operator):
-        operator_id = "simple"
-        @llm_node(model="haiku", output_key="out")
-        def process(self, state):
-            """You are simple."""
-            return "process"
-
-    class SimpleRole(Role):
-        role_id = "simple"
-        soul = "Simple soul."
-        operators = [SimpleOp]
-
-    llm = SimpleLLM()
-    memory = InMemoryStore()
-    memory.store("simple", "m1", "V1 memory")
-    role = SimpleRole(llm=llm, memory=memory)
-    op = role.get_operator("simple")
-    result = op.process({"x": 1})
-
-    assert result["out"] == "v1 output"
-    assert "Simple soul" in llm.last_system
-    assert "V1 memory" in llm.last_system
-
-
 def test_role_runtime_auto_creates_agent_memory():
     """RoleRuntime auto-creates AgentMemory when role has clearance."""
     llm = IntegrationLLM()

@@ -4,7 +4,6 @@ from openvibe_sdk import (
     Operator, Role, RoleRuntime, agent_node, llm_node,
 )
 from openvibe_sdk.llm import LLMResponse, ToolCall
-from openvibe_sdk.memory.in_memory import InMemoryStore
 
 
 class IntegrationLLM:
@@ -59,10 +58,8 @@ class CRO(Role):
 
 def test_full_stack():
     llm = IntegrationLLM()
-    memory = InMemoryStore()
-    memory.store("cro", "insight_1", "Webinar leads convert 2x vs cold")
 
-    runtime = RoleRuntime(roles=[CRO], llm=llm, memory=memory)
+    runtime = RoleRuntime(roles=[CRO], llm=llm)
 
     role = runtime.get_role("cro")
     operator = role.get_operator("company_intel")
@@ -78,11 +75,6 @@ def test_full_stack():
 
     for call in llm.calls:
         assert "CRO" in call["system"]
-
-    memory_found = any(
-        "Webinar leads convert 2x" in call["system"] for call in llm.calls
-    )
-    assert memory_found
 
 
 def test_public_api_exports():

@@ -3,7 +3,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from openvibe_sdk.llm import LLMResponse
-from openvibe_sdk.memory.in_memory import InMemoryStore
 from openvibe_sdk.operator import Operator, llm_node
 from openvibe_sdk.role import Role
 from openvibe_sdk.runtime import RoleRuntime
@@ -99,21 +98,3 @@ def test_activate_unknown_workflow():
         runtime.activate("cro", "revenue_ops", "missing_wf", {})
 
 
-def test_role_injects_memory():
-    llm = FakeLLM(content="scored")
-    memory = InMemoryStore()
-    memory.store("cro", "m1", "Webinar leads convert 2x")
-
-    runtime = RoleRuntime(roles=[CRO], llm=llm, memory=memory)
-
-    def qualify_factory(operator):
-        mock_graph = MagicMock()
-        mock_graph.invoke.return_value = operator.qualify({"lead": "Acme"})
-        return mock_graph
-
-    runtime.register_workflow("revenue_ops", "qualify", qualify_factory)
-    runtime.activate("cro", "revenue_ops", "qualify", {"lead": "Acme"})
-
-    system = llm.calls[0]["system"]
-    assert "You are the CRO" in system
-    assert "Webinar leads convert 2x" in system

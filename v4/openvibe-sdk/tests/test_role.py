@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 from openvibe_sdk.llm import LLMResponse
-from openvibe_sdk.memory.in_memory import InMemoryStore
 from openvibe_sdk.operator import Operator, llm_node
 from openvibe_sdk.role import Role, _RoleAwareLLM
 
@@ -92,19 +91,6 @@ def test_role_aware_llm_injects_soul():
     assert "You are a lead qualifier." in system
 
 
-def test_role_aware_llm_injects_memories():
-    llm = FakeLLM()
-    memory = InMemoryStore()
-    memory.store("cro", "m1", "Webinar leads convert 2x")
-    memory.store("cro", "m2", "Enterprise needs VP sponsor")
-    role = CRO(llm=llm, memory=memory)
-    op = role.get_operator("revenue_ops")
-    op.qualify({"lead": "test"})
-    system = llm.last_system
-    assert "Webinar leads convert 2x" in system
-    assert "Enterprise needs VP sponsor" in system
-
-
 def test_build_system_prompt_soul_only():
     role = CRO(llm=FakeLLM())
     prompt = role.build_system_prompt("Base prompt.")
@@ -116,15 +102,6 @@ def test_build_system_prompt_no_soul():
     role = EmptyRole(llm=FakeLLM())
     prompt = role.build_system_prompt("Just base.")
     assert prompt == "Just base."
-
-
-def test_build_system_prompt_with_memory():
-    memory = InMemoryStore()
-    memory.store("cro", "m1", "Important fact")
-    role = CRO(llm=FakeLLM(), memory=memory)
-    prompt = role.build_system_prompt("Base.", context="fact")
-    assert "Important fact" in prompt
-    assert "Relevant Memories" in prompt
 
 
 def test_soul_from_file():

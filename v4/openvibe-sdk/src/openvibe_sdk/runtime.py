@@ -6,7 +6,6 @@ from typing import Any, Callable
 
 from openvibe_sdk.config import load_operator_configs
 from openvibe_sdk.llm import LLMProvider
-from openvibe_sdk.memory import MemoryProvider
 from openvibe_sdk.models import OperatorConfig
 from openvibe_sdk.operator import Operator
 from openvibe_sdk.role import Role
@@ -117,12 +116,10 @@ class RoleRuntime:
         self,
         roles: list[type[Role]],
         llm: LLMProvider,
-        memory: MemoryProvider | None = None,
         workspace: Any = None,
         scheduler: Any = None,
     ) -> None:
         self.llm = llm
-        self.memory = memory
         self.workspace = workspace
         self.scheduler = scheduler
         self._roles: dict[str, Role] = {}
@@ -135,7 +132,7 @@ class RoleRuntime:
                 agent_id=role_class.role_id,
                 workspace=workspace,
             )
-            role = role_class(llm=llm, memory=memory, agent_memory=agent_mem)
+            role = role_class(llm=llm, agent_memory=agent_mem)
             self._roles[role.role_id] = role
 
     def get_role(self, role_id: str) -> Role:

@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from typing import Any
 
 from openvibe_sdk.llm import LLMProvider, LLMResponse
-from openvibe_sdk.memory import MemoryProvider
 from openvibe_sdk.memory.access import ClearanceProfile
 from openvibe_sdk.memory.agent_memory import AgentMemory
 from openvibe_sdk.memory.assembler import MemoryAssembler
@@ -62,12 +61,10 @@ class Role:
     def __init__(
         self,
         llm: LLMProvider | None = None,
-        memory: MemoryProvider | None = None,
         agent_memory: AgentMemory | None = None,
         config: dict | None = None,
     ) -> None:
         self.llm = llm
-        self.memory = memory
         self.agent_memory = agent_memory
         self.config = config or {}
         self._operator_instances: dict[str, Operator] = {}
@@ -84,40 +81,20 @@ class Role:
         return self.authority.can_act(action)
 
     def respond(self, message: str, context: str = "") -> LLMResponse:
-        """Respond to a message with soul + memory context.
-
-        Builds a system prompt from soul + recalled memories,
-        calls LLM directly, and records an episode.
-        """
+        """Respond to a message with soul + memory context (V2 only)."""
         if not self.llm:
-            raise ValueError(
-                f"Role '{self.role_id}' has no LLM configured"
-            )
+            raise ValueError(f"Role '{self.role_id}' has no LLM configured")
 
-        # Build system prompt: soul + memory context
         parts: list[str] = []
         soul_text = self._load_soul()
         if soul_text:
             parts.append(soul_text)
 
-        # V2: recall relevant insights from agent_memory
         if self.agent_memory:
-            insights = self.agent_memory.recall_insights(
-                query=message, limit=5,
-            )
+            insights = self.agent_memory.recall_insights(query=message, limit=5)
             if insights:
                 lines = [f"- {i.content}" for i in insights]
                 parts.append("## Knowledge\n" + "\n".join(lines))
-        # V1: recall from memory provider
-        elif self.memory:
-            recalled = self.memory.recall(
-                self.role_id, context or message,
-            )
-            if not recalled:
-                recalled = self.memory.recall(self.role_id, "")
-            if recalled:
-                lines = [f"- {m.content}" for m in recalled]
-                parts.append("## Relevant Memories\n" + "\n".join(lines))
 
         system = "\n\n".join(parts)
         response = self.llm.call(
@@ -125,7 +102,6 @@ class Role:
             messages=[{"role": "user", "content": message}],
         )
 
-        # Auto-record episode
         if self.agent_memory:
             self.agent_memory.record_episode(Episode(
                 id=str(uuid.uuid4()),
@@ -203,30 +179,10 @@ class Role:
                 )
         return self._operator_instances[operator_id]
 
-    def build_system_prompt(
-        self, base_prompt: str, context: str = ""
-    ) -> str:
-        """Augment system prompt with soul + recalled memories.
-
-        When context is provided, tries a relevance-filtered recall first.
-        Falls back to all memories for this role if the filter returns nothing.
-
-        V2: When agent_memory is set, skips V1 memory injection (memory
-        context is assembled by decorators via MemoryAssembler instead).
-        """
+    def build_system_prompt(self, base_prompt: str, context: str = "") -> str:
+        """Augment system prompt with soul."""
         soul_text = self._load_soul()
-        memories = ""
-        # V1 memory injection (complementary to V2 assembler)
-        if self.memory and context:
-            recalled = self.memory.recall(self.role_id, context)
-            if not recalled:
-                # Fall back to all memories for this role
-                recalled = self.memory.recall(self.role_id, "")
-            if recalled:
-                memories = "\n## Relevant Memories\n" + "\n".join(
-                    f"- {m.content}" for m in recalled
-                )
-        parts = [p for p in [soul_text, memories, base_prompt] if p]
+        parts = [p for p in [soul_text, base_prompt] if p]
         return "\n\n".join(parts)
 
     def _load_soul(self) -> str:
