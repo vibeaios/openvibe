@@ -446,3 +446,62 @@ Dogfood = 用最低风险的方式搞清楚all-in的方向。
 ---
 
 *This is a research note, not a decision document. The ICP decision should be made at Month 6 with evidence, not now with assumptions.*
+
+---
+
+## 11. Update: "会不会选了一个即将被AI杀死的行业？"
+
+> Date: 2026-02-18 (same day follow-up)
+
+### 核心洞察：Consulting 是危险的 ICP
+
+V4 thesis 说 "认知=瓶颈 AND 认知=产品" 的行业变化最大。但"变化最大"有两种：
+- **Transform**: 活下来但面目全非（会计 — CPA牌照保护）
+- **Die**: 被替代（中低端咨询 — 卖的就是thinking，没有护城河）
+
+Mid-market consulting 卖的是分析和执行本身 — 这正是 AI 直接替代的。选它当 ICP = 给将死之人卖药。
+
+### 2x2 生死矩阵
+
+```
+              认知是产品          认知不是产品
+            ┌─────────────────┬─────────────────┐
+ 有护城河    │ TRANSFORM       │ AUGMENT ← BEST  │
+ (监管/物理  │ 会计, 法律,     │ 制造, 医疗,      │
+  /信任)     │ 顶级咨询        │ 建筑, 房地产     │
+            ├─────────────────┼─────────────────┤
+ 无护城河    │ DIE ← AVOID     │ LEAN OUT         │
+            │ 中低端咨询,      │ 一般行政,        │
+            │ 市场调研,        │ 客服外包         │
+            │ 内容农场         │                  │
+            └─────────────────┴─────────────────┘
+```
+
+**最安全的 ICP = AUGMENT 象限：认知不是产品但是瓶颈，且有物理/监管护城河。**
+
+### 更好的 ICP：不选行业，选公司画像
+
+**"GTM-Bottlenecked Scale-Up" archetype:**
+- Revenue: $10-100M
+- 人数: 50-300
+- 增长卡住（leads不够，conversion不够）
+- CEO 知道要 transform 但不知道怎么做
+- 预算: $50-200K/year
+- 行业不限（但最好有物理/监管护城河）
+
+**Vibe 自己就是这个画像** → 完美 proof point。
+
+**为什么比 consulting 更好：**
+1. 不会被 AI 杀死（他们用 AI 增长）
+2. 不会偷 playbook 竞争（他们不是 AI 公司）
+3. Vibe 是 perfect proof point
+4. 100,000+ companies cross-industry（远大于 15,000 consulting firms）
+5. 购买动力是 "10x growth" 而不是 "我们也该用 AI"
+
+### 修正后的策略
+
+```
+Phase 0 (现在): Vibe dogfood → 证明 thesis
+Phase 1 (M6): 卖给 "和 Vibe 一样的公司" → GTM-bottlenecked, $10-100M, 有护城河
+Phase 2 (M12+): 扩展到更多 archetype → CS-bottlenecked, Product-bottlenecked
+```
