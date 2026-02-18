@@ -7,20 +7,60 @@
 
 ## Current State
 
-**Phase:** V4 — 4-Layer Restructure Complete
-**Status:** 4 packages shipped. SDK v0.3.0 (266 tests), Runtime v0.1.0 (28 tests), Platform v0.1.0 (24 tests), CLI v0.1.0 (13 tests)
+**Phase:** V4 — Platform HTTP Layer Complete
+**Status:** 4 packages shipped. SDK v0.3.0 (266 tests), Runtime v0.1.0 (28 tests), Platform v0.1.0 (47 tests), CLI v0.1.0 (13 tests)
 **Stack:** Python 3.12+, Pydantic v2, typer + httpx + rich (CLI), fastapi (Platform)
-**Next:** Wire Platform → FastAPI HTTP layer; then vibe-ai-adoption dogfood
-**Priority:** SDK first → vibe-ai-adoption acts as the first real SDK user (dogfood), start after SDK is more complete
+**Next:** vibe-ai-adoption dogfood — first real SDK user
+**Priority:** SDK first → vibe-ai-adoption acts as the first real SDK user (dogfood), Platform HTTP is live
 
 | Package | Dir | Version | Tests |
 |---------|-----|---------|-------|
 | `openvibe-sdk` | `v4/openvibe-sdk/` | v0.3.0 | 266 passed |
 | `openvibe-runtime` | `v4/openvibe-runtime/` | v0.1.0 | 28 passed |
-| `openvibe-platform` | `v4/openvibe-platform/` | v0.1.0 | 24 passed |
+| `openvibe-platform` | `v4/openvibe-platform/` | v0.1.0 | 47 passed |
 | `openvibe-cli` | `v4/openvibe-cli/` | v0.1.0 | 13 passed |
 
 **Docs:** `v4/docs/` — thesis, design, principles, proposed designs
+
+---
+
+## Grand Strategy (2026-02-18)
+
+> Full doc: `v4/docs/strategy/GRAND-STRATEGY.md`
+
+**核心命题：专业服务的工厂化。** 专业服务是最后一个还没被工厂化的主要行业。AI 是那个工厂。
+
+**模型：AI-native Berkshire**
+- 不是 SaaS，不是咨询，不是传统 PE（不以退出为目的）
+- 用 AI engine 持续创建并**永久持有** AI-native 专业服务公司
+- 自营层：15-20 家（每个主要 domain 一家，永久持有，65-70% 利润）
+- 平台层：1000+ 家（外部 founders 建细分领域，收 10% revenue share）
+- 终端覆盖：~100,000 家客户
+
+**为什么是多家公司而不是一家直接服务 10 万客户：**
+信任/分发/监管都是 domain-specific 的。一个 "dental billing specialist" 比 "AI 综合服务公司" 更被信任，且每个行业有自己的转介绍网络。
+
+**产品结构：** 从 1000 家公司演化出 10,000 个 hyper-specific 产品——不是设计出来的，是 AI engine 从数据里发现的 micro-segment 自然分裂。
+
+**四层战略（互相支撑，不是平行选项）：**
+- O6 判断力放大器 ← 技术层，引擎
+- O4 专业服务解绑 ← 人才层，domain experts 提供判断力
+- O12 持有型工厂 ← 资本层，自营公司永久持有
+- O5 平台型工厂 ← 规模层，外部 founders 建长尾
+
+**Phase 0 的真实意义（Vibe dogfood）：** 验证三个前提：
+1. AI 交付质量达标（客户愿意付费续费）
+2. 工厂可复制（Playbook 可以跨 domain 迁移）
+3. 系统性获客可行（GTM engine 不依赖个人关系）
+
+**最先建的 5 家自营公司（基于 Vibe 优势）：**
+1. AI-native B2B Marketing Co. — Vibe 自己是 proof point
+2. AI-native Healthcare Billing Co. — 最大 TAM，RCM $27.5B → $110B
+3. AI-native AEC Ops Co. — Vibe 最快增长垂直，已有关系
+4. AI-native Sales Development Co. — 通用需求，ROI 可快速测量
+5. AI-native Compliance Co. — 高度可重复，规则驱动
+
+**时间窗口：** 18-24 个月，之后模型被复制风险大幅上升。
 
 ---
 
@@ -45,6 +85,7 @@ All docs consolidated into `v4/docs/`:
 | `plans/2026-02-17-sdk-v2-implementation.md` | **Complete** | 12 tasks, 105 tests, memory + authority + access control |
 | `plans/2026-02-18-4-layer-restructure-implementation.md` | **Complete** | 18 tasks, 4 packages, TDD throughout |
 | `strategy/DOGFOOD-GTM.md` | Proposed | 6-month validation strategy |
+| `strategy/GRAND-STRATEGY.md` | **New (2026-02-18)** | AI-native Berkshire — professional services factory-ization |
 | `reference/INTERFACE-DESIGN.md` | Final | Discord-inspired UI/UX |
 | `reference/EVOLUTION.md` | Reference | V1→V2→V3→V4 evolution mapping |
 
@@ -60,6 +101,7 @@ All docs consolidated into `v4/docs/`:
 - **SDK V2 complete** (2026-02-17): Memory pyramid + authority + access control, 194 tests, 15 public exports (v0.2.0)
 - **Role SDK complete** (2026-02-18): respond(), memory_fs, reflect(), list_operators(), .directory, 216 tests
 - **4-layer restructure complete** (2026-02-18): SDK v0.3.0 + Runtime + Platform + CLI, 331 total tests
+- **Platform HTTP complete** (2026-02-18): FastAPI layer, JSON persistence, 47 tests
 
 ### V3 (Archived) — Implementation
 - Built Temporal + LangGraph + CrewAI stack → then removed CrewAI
@@ -97,4 +139,4 @@ All docs consolidated into `v4/docs/`:
 
 ---
 
-*Last updated: 2026-02-18T04:00Z*
+*Last updated: 2026-02-18T12:00Z*
