@@ -1,4 +1,4 @@
-"""Tests for /api/v1/approvals endpoints."""
+"""Tests for approvals endpoints (legacy /api/v1 and tenant-scoped)."""
 
 
 def test_list_pending_empty(client):
@@ -31,3 +31,11 @@ def test_reject(client):
     assert r.status_code == 200
     assert svc.get(req.id).status == "rejected"
     assert svc.get(req.id).rejection_reason == "too risky"
+
+
+def test_tenant_approval_isolation(client):
+    vibe_svc = client.app.state.tenant_human_loop_svcs["vibe-inc"]
+    vibe_svc.request_approval("cro", "send_email", {}, "cro-agent")
+    r = client.get("/tenants/astrocrest/workspaces/ws1/approvals")
+    assert r.status_code == 200
+    assert len(r.json()) == 0

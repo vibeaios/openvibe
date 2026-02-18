@@ -1,4 +1,4 @@
-"""Tests for /api/v1/deliverables endpoints."""
+"""Tests for deliverables endpoints (legacy /api/v1 and tenant-scoped)."""
 
 
 def test_list_empty(client):
@@ -30,3 +30,11 @@ def test_acknowledge(client):
     r = client.post(f"/api/v1/deliverables/{d.id}/acknowledge", json={"by": "alice"})
     assert r.status_code == 200
     assert svc.get_deliverable(d.id).status == "acknowledged"
+
+
+def test_tenant_deliverable_isolation(client):
+    vibe_svc = client.app.state.tenant_human_loop_svcs["vibe-inc"]
+    vibe_svc.stage_deliverable("cro", "report", "Q1", {})
+    r = client.get("/tenants/astrocrest/deliverables")
+    assert r.status_code == 200
+    assert len(r.json()) == 0

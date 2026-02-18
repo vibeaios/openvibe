@@ -1,4 +1,4 @@
-"""Tests for /api/v1/workspaces/{ws}/roles endpoints."""
+"""Tests for roles endpoints (legacy /api/v1 and tenant-scoped)."""
 
 
 def test_list_roles_empty(client):
@@ -31,3 +31,12 @@ def test_inspect_role(client):
     r = client.get(f"/api/v1/roles/{role_id}")
     assert r.status_code == 200
     assert r.json()["id"] == role_id
+
+
+def test_tenant_role_isolation(client):
+    client.post(
+        "/tenants/vibe-inc/workspaces/ws1/roles/spawn",
+        json={"template": "cmo", "params": {}},
+    )
+    roles = client.get("/tenants/astrocrest/workspaces/ws1/roles").json()
+    assert len(roles) == 0

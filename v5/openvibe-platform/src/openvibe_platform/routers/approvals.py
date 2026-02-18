@@ -1,10 +1,10 @@
-"""HTTP router for /api/v1/approvals."""
+"""HTTP router for approvals — legacy /api/v1 and tenant-scoped."""
 
 from __future__ import annotations
 
 import dataclasses
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from openvibe_platform.human_loop import HumanLoopService
@@ -48,5 +48,23 @@ def make_router(svc: HumanLoopService, store: JSONFileStore | None = None) -> AP
         svc.reject(request_id, "human", body.reason)
         _save()
         return {}
+
+    return router
+
+
+def make_tenant_router() -> APIRouter:
+    """Tenant-scoped approvals at /tenants/{tenant_id}/workspaces/{ws}/approvals."""
+    router = APIRouter(tags=["tenant-approvals"])
+
+    def _get_svc(request: Request, tenant_id: str) -> HumanLoopService:
+        svcs: dict[str, HumanLoopService] = request.app.state.tenant_human_loop_svcs
+        if tenant_id not in svcs:
+            raise HTTPException(status_code=404, detail=f"Tenant not found: {tenant_id}")
+        return svcs[tenant_id]
+
+    @router.get("/tenants/{tenant_id}/workspaces/{workspace_id}/approvals")
+    def list_tenant_approvals(tenant_id: str, workspace_id: str, request: Request) -> list[dict]:
+        svc = _get_svc(request, tenant_id)
+        return [dataclasses.asdict(r) for r in svc.list_pending()]
 
     return router

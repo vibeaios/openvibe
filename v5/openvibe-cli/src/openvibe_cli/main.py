@@ -20,7 +20,15 @@ def main(
         help="Platform host URL",
         envvar="VIBE_HOST",
     ),
+    tenant: str = typer.Option(
+        "vibe-inc",
+        "--tenant",
+        "-t",
+        help="Tenant ID",
+        envvar="VIBE_TENANT",
+    ),
 ) -> None:
     """OpenVibe CLI — manage workspaces, roles, tasks, deliverables."""
     ctx.ensure_object(dict)
     ctx.obj["host"] = host
+    ctx.obj["tenant"] = tenant

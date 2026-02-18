@@ -62,3 +62,11 @@ def test_deliverable_ack(httpx_mock):
     result = runner.invoke(app, ["deliverable", "ack", "del-789"])
     assert result.exit_code == 0
     assert "del-789" in result.output
+
+
+# ── tenant flag ────────────────────────────────────────────────
+
+def test_cli_tenant_flag(httpx_mock):
+    httpx_mock.add_response(json=[])
+    result = runner.invoke(app, ["--tenant", "astrocrest", "workspace", "list"])
+    assert result.exit_code == 0

@@ -52,11 +52,20 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
     tenant_store = TenantStore(_DEFAULT_TENANTS)
     app.state.tenant_store = tenant_store
 
-    # Per-tenant workspace services (for isolated tenant-scoped routes)
+    # Per-tenant services (for isolated tenant-scoped routes)
+    tenant_ids = [t["id"] for t in _DEFAULT_TENANTS]
     tenant_workspace_svcs: dict[str, WorkspaceService] = {
-        t["id"]: WorkspaceService() for t in _DEFAULT_TENANTS
+        tid: WorkspaceService() for tid in tenant_ids
+    }
+    tenant_human_loop_svcs: dict[str, HumanLoopService] = {
+        tid: HumanLoopService() for tid in tenant_ids
+    }
+    tenant_registries: dict[str, InMemoryRegistry] = {
+        tid: InMemoryRegistry() for tid in tenant_ids
     }
     app.state.tenant_workspace_svcs = tenant_workspace_svcs
+    app.state.tenant_human_loop_svcs = tenant_human_loop_svcs
+    app.state.tenant_registries = tenant_registries
 
     from openvibe_platform.routers import approvals as approvals_router
     from openvibe_platform.routers import deliverables as deliverables_router
@@ -70,6 +79,9 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
     app.include_router(deliverables_router.make_router(human_loop_svc, store), prefix="/api/v1")
     app.include_router(tenants_router.router)
     app.include_router(ws_router.make_tenant_router())
+    app.include_router(roles_router.make_tenant_router())
+    app.include_router(approvals_router.make_tenant_router())
+    app.include_router(deliverables_router.make_tenant_router())
 
     return app
 
