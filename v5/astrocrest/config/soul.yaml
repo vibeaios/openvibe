@@ -1,0 +1,5 @@
+workspace:
+  tenant_id: astrocrest
+  name: Astrocrest
+  description: OpenVibe's operating intelligence — scans markets, creates companies, manages lifecycles
+  system_roles: [Coordinator, Archivist, Auditor]

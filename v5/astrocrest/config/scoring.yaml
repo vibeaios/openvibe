@@ -1,0 +1,45 @@
+dimensions:
+  flywheel_density:
+    weight: 0.30
+    description: Community tightness, word-of-mouth velocity
+    measurement: >
+      Presence of tight professional networks (associations, conferences, peer forums).
+      Proxy: Does this sub-segment have a national conference with >500 attendees?
+      Score 1-5 based on network density observed.
+
+  ai_deliverability:
+    weight: 0.25
+    description: Percentage of core work AI can complete autonomously
+    measurement: >
+      Estimate the fraction of the core service delivery that does not require
+      licensed human judgment, relationship capital, or physical presence.
+      Score 1-5: 1=<40%, 2=40-55%, 3=55-70%, 4=70-85%, 5=>85%
+
+  pain_urgency:
+    weight: 0.20
+    description: Budget exists, need is acute, timeline pressure
+    measurement: >
+      Is the pain causing measurable revenue loss or compliance risk?
+      Is the client currently spending money on an inferior solution?
+      Does the client have budget authority to make a decision in <30 days?
+      Score 1-5 based on urgency signals.
+
+  competitive_gap:
+    weight: 0.15
+    description: No AI-native competitors in this sub-segment
+    measurement: >
+      How many AI-native companies are actively targeting this exact sub-segment?
+      Score 5: zero. Score 4: 1-2 early-stage. Score 3: 3-5 early-stage.
+      Score 2: established competitor exists. Score 1: well-funded AI-native competitor.
+
+  reach:
+    weight: 0.10
+    description: Accessible via Vibe channels or direct outreach
+    measurement: >
+      Does Vibe have existing relationships or channel access into this sub-segment?
+      Score 5: direct Vibe channel (K12, AEC). Score 3: conference/association outreach.
+      Score 1: cold outreach only.
+
+minimum_score_to_enter: 4.0
+hold_band: [3.5, 3.99]
+rescore_after_days: 90

@@ -1,0 +1,20 @@
+roles:
+  # Research team
+  - template: research/market-scanner-role
+    name: Market Scanner
+
+  - template: research/competitive-intel-role
+    name: Competitive Intel
+
+  - template: research/signal-monitor-role
+    name: Signal Monitor
+
+  # Lifecycle team
+  - template: lifecycle/incubator-role
+    name: Incubator
+
+  - template: lifecycle/health-monitor-role
+    name: Health Monitor
+
+  - template: lifecycle/portfolio-manager-role
+    name: Portfolio Manager
