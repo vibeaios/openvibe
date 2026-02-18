@@ -10,9 +10,9 @@
 **Phase:** V4 — Vibe AI Adoption
 **Status:** 5 operators, 22 workflows, 80 nodes. 116/116 tests passing.
 **Stack:** Python 3.13, Temporal + LangGraph + Anthropic SDK (direct `call_claude()`, no CrewAI)
-**Next:** T25 (smoke test with real APIs) → T26 (go live)
+**Next:** Write simple CRO integration test → then validate against real APIs
 **Project dir:** `v4/vibe-ai-adoption/` — read its `PROGRESS.md` for implementation details
-**SDK dir:** `v4/openvibe-sdk/` — **SDK V2 complete** (194/194 tests, 25 commits, v0.2.0)
+**SDK dir:** `v4/openvibe-sdk/` — **Role SDK complete** (216/216 tests, 28 commits, v0.2.0)
 **Docs:** `v4/docs/` — thesis, design, principles, proposed designs
 
 ---
@@ -50,6 +50,7 @@ All docs consolidated into `v4/docs/`:
 - All docs in `v4/docs/`, all code in `v4/vibe-ai-adoption/`
 - **SDK V1 complete** (2026-02-17): 4-layer framework at `v4/openvibe-sdk/`, 87 tests, 6 public exports
 - **SDK V2 complete** (2026-02-17): Memory pyramid + authority + access control, 194 tests, 15 public exports (v0.2.0)
+- **Role SDK complete** (2026-02-18): respond(), memory_fs, reflect(), list_operators(), .directory, 216 tests
 
 ### V3 (Archived) — Implementation
 - Built Temporal + LangGraph + CrewAI stack → then removed CrewAI
@@ -87,4 +88,4 @@ All docs consolidated into `v4/docs/`:
 
 ---
 
-*Last updated: 2026-02-17T23:26Z*
+*Last updated: 2026-02-18T01:39Z*
