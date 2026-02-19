@@ -36,8 +36,16 @@ class ReportState(TypedDict, total=False):
     report: str
 
 
-def create_daily_optimize_graph(operator):
-    """Daily optimization: read performance → analyze → adjust bids."""
+class AudienceRefreshState(TypedDict, total=False):
+    action: str
+    audience_result: str
+
+
+# --- MetaAdOps workflows ---
+
+
+def create_meta_daily_optimize_graph(operator):
+    """Meta daily optimization: read performance → analyze → adjust bids."""
     graph = StateGraph(OptimizeState)
     graph.add_node("optimize", operator.daily_optimize)
     graph.set_entry_point("optimize")
@@ -45,12 +53,21 @@ def create_daily_optimize_graph(operator):
     return graph.compile()
 
 
-def create_campaign_create_graph(operator):
-    """Campaign creation: read brief → build campaign → return IDs."""
+def create_meta_campaign_create_graph(operator):
+    """Meta campaign creation: read brief → build campaign → return IDs."""
     graph = StateGraph(CampaignState)
     graph.add_node("create", operator.campaign_create)
     graph.set_entry_point("create")
     graph.set_finish_point("create")
+    return graph.compile()
+
+
+def create_meta_audience_refresh_graph(operator):
+    """Meta audience refresh: review audiences → flag stale → recommend."""
+    graph = StateGraph(AudienceRefreshState)
+    graph.add_node("refresh", operator.audience_refresh)
+    graph.set_entry_point("refresh")
+    graph.set_finish_point("refresh")
     return graph.compile()
 
 
@@ -81,8 +98,8 @@ def create_page_optimize_graph(operator):
     return graph.compile()
 
 
-def create_weekly_report_graph(operator):
-    """Weekly report: read all data → generate Net New vs Known report."""
+def create_meta_weekly_report_graph(operator):
+    """Meta weekly report: read all data → generate Net New vs Known report."""
     graph = StateGraph(ReportState)
     graph.add_node("report", operator.weekly_report)
     graph.set_entry_point("report")
