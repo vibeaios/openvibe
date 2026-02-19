@@ -31,7 +31,7 @@ def make_router(svc: HumanLoopService, store: JSONFileStore | None = None) -> AP
 
     @router.get("/workspaces/{workspace_id}/approvals")
     def list_approvals(workspace_id: str) -> list[dict]:
-        return [dataclasses.asdict(r) for r in svc.list_pending()]
+        return [dataclasses.asdict(r) for r in svc.list_pending(workspace_id=workspace_id)]
 
     @router.post("/approvals/{request_id}/approve")
     def approve(request_id: str, body: _ApproveBody) -> dict:
@@ -65,6 +65,6 @@ def make_tenant_router() -> APIRouter:
     @router.get("/tenants/{tenant_id}/workspaces/{workspace_id}/approvals")
     def list_tenant_approvals(tenant_id: str, workspace_id: str, request: Request) -> list[dict]:
         svc = _get_svc(request, tenant_id)
-        return [dataclasses.asdict(r) for r in svc.list_pending()]
+        return [dataclasses.asdict(r) for r in svc.list_pending(workspace_id=workspace_id)]
 
     return router

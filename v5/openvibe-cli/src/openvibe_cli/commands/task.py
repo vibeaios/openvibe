@@ -9,8 +9,12 @@ app = typer.Typer(help="Manage approval tasks")
 console = Console()
 
 
-def _host(ctx: typer.Context) -> str:
-    return ctx.obj.get("host", "http://localhost:8000") if ctx.obj else "http://localhost:8000"
+def _base(ctx: typer.Context) -> str:
+    """Return base URL including tenant prefix."""
+    obj = ctx.obj or {}
+    host = obj.get("host", "http://localhost:8000")
+    tenant = obj.get("tenant", "vibe-inc")
+    return f"{host}/tenants/{tenant}"
 
 
 @app.command("list")
@@ -19,8 +23,8 @@ def list_tasks(
     workspace: str = typer.Option(..., "--workspace", help="Workspace ID"),
 ) -> None:
     """List pending approval requests."""
-    host = _host(ctx)
-    resp = httpx.get(f"{host}/api/v1/workspaces/{workspace}/approvals")
+    base = _base(ctx)
+    resp = httpx.get(f"{base}/workspaces/{workspace}/approvals")
     resp.raise_for_status()
     data = resp.json()
     if not data:
@@ -39,8 +43,8 @@ def approve_task(
     request_id: str = typer.Argument(..., help="Approval request ID"),
 ) -> None:
     """Approve a pending request."""
-    host = _host(ctx)
-    resp = httpx.post(f"{host}/api/v1/approvals/{request_id}/approve")
+    base = _base(ctx)
+    resp = httpx.post(f"{base}/approvals/{request_id}/approve")
     resp.raise_for_status()
     console.print(f"[green]Approved request '{request_id}'[/green]")
 
@@ -52,8 +56,8 @@ def reject_task(
     reason: str = typer.Option("", "--reason", help="Rejection reason"),
 ) -> None:
     """Reject a pending request."""
-    host = _host(ctx)
-    resp = httpx.post(f"{host}/api/v1/approvals/{request_id}/reject",
+    base = _base(ctx)
+    resp = httpx.post(f"{base}/approvals/{request_id}/reject",
                       json={"reason": reason})
     resp.raise_for_status()
     console.print(f"[yellow]Rejected request '{request_id}'[/yellow]")

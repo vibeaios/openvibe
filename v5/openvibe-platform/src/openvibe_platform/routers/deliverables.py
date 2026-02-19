@@ -27,7 +27,10 @@ def make_router(svc: HumanLoopService, store: JSONFileStore | None = None) -> AP
 
     @router.get("/deliverables")
     def list_deliverables(workspace: str = "", role_id: str = "") -> list[dict]:
-        items = svc.list_deliverables(role_id=role_id or None)
+        items = svc.list_deliverables(
+            role_id=role_id or None,
+            workspace_id=workspace or None,
+        )
         return [dataclasses.asdict(d) for d in items]
 
     @router.get("/deliverables/{deliverable_id}")

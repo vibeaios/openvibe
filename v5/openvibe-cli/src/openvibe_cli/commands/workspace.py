@@ -9,15 +9,19 @@ app = typer.Typer(help="Manage workspaces")
 console = Console()
 
 
-def _host(ctx: typer.Context) -> str:
-    return ctx.obj.get("host", "http://localhost:8000") if ctx.obj else "http://localhost:8000"
+def _base(ctx: typer.Context) -> str:
+    """Return base URL including tenant prefix."""
+    obj = ctx.obj or {}
+    host = obj.get("host", "http://localhost:8000")
+    tenant = obj.get("tenant", "vibe-inc")
+    return f"{host}/tenants/{tenant}"
 
 
 @app.command("list")
 def list_workspaces(ctx: typer.Context) -> None:
     """List all workspaces."""
-    host = _host(ctx)
-    resp = httpx.get(f"{host}/api/v1/workspaces")
+    base = _base(ctx)
+    resp = httpx.get(f"{base}/workspaces")
     resp.raise_for_status()
     data = resp.json()
     if not data:
@@ -37,8 +41,8 @@ def create_workspace(
     owner: str = typer.Option(..., "--owner", help="Owner ID"),
 ) -> None:
     """Create a new workspace."""
-    host = _host(ctx)
-    resp = httpx.post(f"{host}/api/v1/workspaces",
+    base = _base(ctx)
+    resp = httpx.post(f"{base}/workspaces",
                       json={"id": workspace_id, "name": name, "owner": owner})
     resp.raise_for_status()
     console.print(f"[green]Created workspace '{workspace_id}'[/green]")
@@ -50,7 +54,7 @@ def delete_workspace(
     workspace_id: str = typer.Argument(..., help="Workspace ID"),
 ) -> None:
     """Delete a workspace."""
-    host = _host(ctx)
-    resp = httpx.delete(f"{host}/api/v1/workspaces/{workspace_id}")
+    base = _base(ctx)
+    resp = httpx.delete(f"{base}/workspaces/{workspace_id}")
     resp.raise_for_status()
     console.print(f"[yellow]Deleted workspace '{workspace_id}'[/yellow]")

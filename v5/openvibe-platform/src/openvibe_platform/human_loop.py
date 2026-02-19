@@ -15,6 +15,7 @@ class ApprovalRequest:
     action: str
     context: dict[str, Any]
     requested_by: str
+    workspace_id: str = ""
     status: str = "pending"           # "pending" | "approved" | "rejected"
     approved_by: str = ""
     rejected_by: str = ""
@@ -29,6 +30,7 @@ class Deliverable:
     type: str
     content: str
     metadata: dict[str, Any]
+    workspace_id: str = ""
     status: str = "pending_review"    # "pending_review" | "acknowledged"
     acknowledged_by: str = ""
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -40,15 +42,20 @@ class HumanLoopService:
         self._deliverables: dict[str, Deliverable] = {}
 
     def request_approval(self, role_id: str, action: str,
-                         context: dict, requested_by: str) -> ApprovalRequest:
+                         context: dict, requested_by: str,
+                         workspace_id: str = "") -> ApprovalRequest:
         req = ApprovalRequest(id=str(uuid.uuid4()), role_id=role_id,
                               action=action, context=context,
-                              requested_by=requested_by)
+                              requested_by=requested_by,
+                              workspace_id=workspace_id)
         self._approvals[req.id] = req
         return req
 
-    def list_pending(self) -> list[ApprovalRequest]:
-        return [r for r in self._approvals.values() if r.status == "pending"]
+    def list_pending(self, workspace_id: str | None = None) -> list[ApprovalRequest]:
+        items = [r for r in self._approvals.values() if r.status == "pending"]
+        if workspace_id:
+            items = [r for r in items if r.workspace_id == workspace_id]
+        return items
 
     def get(self, request_id: str) -> ApprovalRequest | None:
         return self._approvals.get(request_id)
@@ -65,16 +72,21 @@ class HumanLoopService:
         req.rejection_reason = reason
 
     def stage_deliverable(self, role_id: str, type: str,
-                          content: str, metadata: dict) -> Deliverable:
+                          content: str, metadata: dict,
+                          workspace_id: str = "") -> Deliverable:
         d = Deliverable(id=str(uuid.uuid4()), role_id=role_id,
-                        type=type, content=content, metadata=metadata)
+                        type=type, content=content, metadata=metadata,
+                        workspace_id=workspace_id)
         self._deliverables[d.id] = d
         return d
 
-    def list_deliverables(self, role_id: str | None = None) -> list[Deliverable]:
+    def list_deliverables(self, role_id: str | None = None,
+                          workspace_id: str | None = None) -> list[Deliverable]:
         items = list(self._deliverables.values())
         if role_id:
             items = [d for d in items if d.role_id == role_id]
+        if workspace_id:
+            items = [d for d in items if d.workspace_id == workspace_id]
         return items
 
     def get_deliverable(self, deliverable_id: str) -> Deliverable | None:

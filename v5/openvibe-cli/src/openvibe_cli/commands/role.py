@@ -10,8 +10,12 @@ app = typer.Typer(help="Manage roles")
 console = Console()
 
 
-def _host(ctx: typer.Context) -> str:
-    return ctx.obj.get("host", "http://localhost:8000") if ctx.obj else "http://localhost:8000"
+def _base(ctx: typer.Context) -> str:
+    """Return base URL including tenant prefix."""
+    obj = ctx.obj or {}
+    host = obj.get("host", "http://localhost:8000")
+    tenant = obj.get("tenant", "vibe-inc")
+    return f"{host}/tenants/{tenant}"
 
 
 @app.command("list")
@@ -20,8 +24,8 @@ def list_roles(
     workspace: str = typer.Option(..., "--workspace", help="Workspace ID"),
 ) -> None:
     """List roles in a workspace."""
-    host = _host(ctx)
-    resp = httpx.get(f"{host}/api/v1/workspaces/{workspace}/roles")
+    base = _base(ctx)
+    resp = httpx.get(f"{base}/workspaces/{workspace}/roles")
     resp.raise_for_status()
     data = resp.json()
     if not data:
@@ -41,9 +45,9 @@ def spawn_role(
     params: str = typer.Option("{}", "--params", help="JSON params for template"),
 ) -> None:
     """Spawn a new role from a template."""
-    host = _host(ctx)
+    base = _base(ctx)
     resp = httpx.post(
-        f"{host}/api/v1/workspaces/{workspace}/roles/spawn",
+        f"{base}/workspaces/{workspace}/roles/spawn",
         json={"template": template, "params": json.loads(params)},
     )
     resp.raise_for_status()
@@ -57,7 +61,7 @@ def inspect_role(
     role_id: str = typer.Argument(..., help="Role ID"),
 ) -> None:
     """Inspect a role."""
-    host = _host(ctx)
-    resp = httpx.get(f"{host}/api/v1/roles/{role_id}")
+    base = _base(ctx)
+    resp = httpx.get(f"{base}/roles/{role_id}")
     resp.raise_for_status()
     console.print_json(data=resp.json())

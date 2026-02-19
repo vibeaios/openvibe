@@ -9,11 +9,20 @@ def test_list_pending_empty(client):
 
 def test_list_pending_shows_only_pending(client):
     svc = client.app.state.human_loop_svc
-    req = svc.request_approval("cro", "send_email", {}, "cro-agent")
-    svc.request_approval("cmo", "post_tweet", {}, "cmo-agent")
+    req = svc.request_approval("cro", "send_email", {}, "cro-agent", workspace_id="ws1")
+    svc.request_approval("cmo", "post_tweet", {}, "cmo-agent", workspace_id="ws1")
     svc.approve(req.id, "alice")  # one already approved
     r = client.get("/api/v1/workspaces/ws1/approvals")
     assert len(r.json()) == 1  # only the pending one
+
+
+def test_list_pending_filters_by_workspace(client):
+    svc = client.app.state.human_loop_svc
+    svc.request_approval("cro", "send_email", {}, "cro-agent", workspace_id="ws1")
+    svc.request_approval("cmo", "post_tweet", {}, "cmo-agent", workspace_id="ws2")
+    r = client.get("/api/v1/workspaces/ws1/approvals")
+    assert len(r.json()) == 1
+    assert r.json()[0]["workspace_id"] == "ws1"
 
 
 def test_approve(client):
@@ -35,7 +44,7 @@ def test_reject(client):
 
 def test_tenant_approval_isolation(client):
     vibe_svc = client.app.state.tenant_human_loop_svcs["vibe-inc"]
-    vibe_svc.request_approval("cro", "send_email", {}, "cro-agent")
+    vibe_svc.request_approval("cro", "send_email", {}, "cro-agent", workspace_id="ws1")
     r = client.get("/tenants/astrocrest/workspaces/ws1/approvals")
     assert r.status_code == 200
     assert len(r.json()) == 0

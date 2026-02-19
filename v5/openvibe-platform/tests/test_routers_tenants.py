@@ -1,12 +1,4 @@
-import pytest
-from fastapi.testclient import TestClient
-from openvibe_platform.app import create_app
-
-
-@pytest.fixture
-def client():
-    app = create_app(data_dir=":memory:")
-    return TestClient(app)
+"""Tests for /tenants routes."""
 
 
 def test_list_tenants(client):

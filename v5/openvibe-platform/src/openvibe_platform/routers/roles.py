@@ -5,7 +5,7 @@ from __future__ import annotations
 import dataclasses
 
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from openvibe_platform.store import JSONFileStore
 from openvibe_sdk.registry import InMemoryRegistry, Participant
@@ -13,7 +13,7 @@ from openvibe_sdk.registry import InMemoryRegistry, Participant
 
 class _RoleSpawn(BaseModel):
     template: str
-    params: dict = {}
+    params: dict = Field(default_factory=dict)
 
 
 def make_router(registry: InMemoryRegistry, store: JSONFileStore | None = None) -> APIRouter:

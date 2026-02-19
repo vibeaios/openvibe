@@ -147,3 +147,34 @@ soul:
 ```
 
 The SOUL is the moat. A role shaped by months of real feedback from Vibe's team is worth more than a generic prompt.
+
+---
+
+## 6. Known Debt: Model Duality (V3 vs V5)
+
+`models.py` contains two parallel template/spec hierarchies:
+
+| Origin | Models | Fields |
+|--------|--------|--------|
+| V3 (from V4 SDK) | `RoleTemplate`, `RoleSpec` | authority, domains, TTL, trust, goals, operator_ids |
+| V5 (new) | `TemplateConfig`, `RoleInstance` | name, soul dict, capabilities list |
+
+**Current state:** `Role.spawn()` uses V3 models. `TemplateRegistry` uses V5 models. They do not interoperate.
+
+**Phase 3 resolution:** V5 models will absorb the relevant V3 fields (authority, domains, trust) as the template YAML schema matures. V3 models will be deprecated once all role instantiation flows through `TemplateRegistry`. The migration path:
+
+1. Extend `TemplateConfig` with optional authority/domains/trust fields
+2. Update `TemplateRegistry.instantiate()` to produce enriched `RoleInstance` objects
+3. Bridge `RoleInstance` → `Role` (connect to LLM, memory, operators)
+4. Remove V3 `RoleTemplate`/`RoleSpec` once no code references them
+
+---
+
+## 7. Legacy vs Tenant Routes
+
+The platform serves two parallel route sets:
+
+- **Legacy** (`/api/v1/...`) — shared service instances, persisted via `JSONFileStore`
+- **Tenant-scoped** (`/tenants/{id}/...`) — per-tenant isolated instances, in-memory only
+
+Data does not flow between them. This is intentional: legacy routes exist for backward compatibility during migration. New code should use tenant-scoped routes exclusively. Legacy routes will be removed once all clients migrate.

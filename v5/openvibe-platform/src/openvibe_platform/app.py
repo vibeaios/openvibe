@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+import yaml
 from fastapi import FastAPI
 
 from openvibe_platform.human_loop import ApprovalRequest, Deliverable, HumanLoopService
@@ -20,6 +21,22 @@ _DEFAULT_TENANTS = [
     {"id": "vibe-inc", "name": "Vibe Inc", "data_dir": ":memory:"},
     {"id": "astrocrest", "name": "Astrocrest", "data_dir": ":memory:"},
 ]
+
+_CONFIG_DIR = Path(__file__).resolve().parent.parent.parent / "config"
+
+
+def _load_tenants(data_dir: str | Path) -> list[dict]:
+    """Load tenants from config/tenants.yaml, or fall back to defaults for :memory: mode."""
+    if str(data_dir) == ":memory:":
+        return _DEFAULT_TENANTS
+
+    yaml_path = _CONFIG_DIR / "tenants.yaml"
+    if yaml_path.exists():
+        with open(yaml_path) as f:
+            cfg = yaml.safe_load(f)
+        return cfg.get("tenants", _DEFAULT_TENANTS)
+
+    return _DEFAULT_TENANTS
 
 
 def create_app(data_dir: str | Path | None = None) -> FastAPI:
@@ -48,12 +65,13 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
     app.state.human_loop_svc = human_loop_svc
     app.state.registry = registry
 
-    # Tenant store — hardcoded defaults for :memory:, loaded from YAML otherwise
-    tenant_store = TenantStore(_DEFAULT_TENANTS)
+    # Load tenants from YAML (production) or defaults (:memory: / tests)
+    tenants = _load_tenants(data_dir)
+    tenant_store = TenantStore(tenants)
     app.state.tenant_store = tenant_store
 
     # Per-tenant services (for isolated tenant-scoped routes)
-    tenant_ids = [t["id"] for t in _DEFAULT_TENANTS]
+    tenant_ids = [t["id"] for t in tenants]
     tenant_workspace_svcs: dict[str, WorkspaceService] = {
         tid: WorkspaceService() for tid in tenant_ids
     }
@@ -106,6 +124,7 @@ def _restore(
             action=item["action"],
             context=item.get("context", {}),
             requested_by=item.get("requested_by", ""),
+            workspace_id=item.get("workspace_id", ""),
             status=item.get("status", "pending"),
             approved_by=item.get("approved_by", ""),
             rejected_by=item.get("rejected_by", ""),
@@ -125,6 +144,7 @@ def _restore(
             type=item["type"],
             content=item.get("content", ""),
             metadata=item.get("metadata", {}),
+            workspace_id=item.get("workspace_id", ""),
             status=item.get("status", "pending_review"),
             acknowledged_by=item.get("acknowledged_by", ""),
             created_at=(

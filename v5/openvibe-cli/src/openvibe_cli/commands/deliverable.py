@@ -9,8 +9,12 @@ app = typer.Typer(help="Manage deliverables")
 console = Console()
 
 
-def _host(ctx: typer.Context) -> str:
-    return ctx.obj.get("host", "http://localhost:8000") if ctx.obj else "http://localhost:8000"
+def _base(ctx: typer.Context) -> str:
+    """Return base URL including tenant prefix."""
+    obj = ctx.obj or {}
+    host = obj.get("host", "http://localhost:8000")
+    tenant = obj.get("tenant", "vibe-inc")
+    return f"{host}/tenants/{tenant}"
 
 
 @app.command("list")
@@ -20,11 +24,11 @@ def list_deliverables(
     role: str = typer.Option("", "--role", help="Filter by role ID"),
 ) -> None:
     """List deliverables."""
-    host = _host(ctx)
-    params = {"workspace": workspace}
+    base = _base(ctx)
+    params: dict[str, str] = {}
     if role:
         params["role_id"] = role
-    resp = httpx.get(f"{host}/api/v1/deliverables", params=params)
+    resp = httpx.get(f"{base}/deliverables", params=params)
     resp.raise_for_status()
     data = resp.json()
     if not data:
@@ -43,8 +47,8 @@ def view_deliverable(
     deliverable_id: str = typer.Argument(..., help="Deliverable ID"),
 ) -> None:
     """View a deliverable's content."""
-    host = _host(ctx)
-    resp = httpx.get(f"{host}/api/v1/deliverables/{deliverable_id}")
+    base = _base(ctx)
+    resp = httpx.get(f"{base}/deliverables/{deliverable_id}")
     resp.raise_for_status()
     data = resp.json()
     console.print(data.get("content", ""))
@@ -56,7 +60,7 @@ def ack_deliverable(
     deliverable_id: str = typer.Argument(..., help="Deliverable ID"),
 ) -> None:
     """Acknowledge a deliverable."""
-    host = _host(ctx)
-    resp = httpx.post(f"{host}/api/v1/deliverables/{deliverable_id}/acknowledge")
+    base = _base(ctx)
+    resp = httpx.post(f"{base}/deliverables/{deliverable_id}/acknowledge")
     resp.raise_for_status()
     console.print(f"[green]Acknowledged '{deliverable_id}'[/green]")

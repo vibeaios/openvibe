@@ -12,13 +12,20 @@ def test_system_role_names():
     assert names == {"Coordinator", "Archivist", "Auditor"}
 
 
-def test_coordinator_purpose():
-    assert Coordinator.name == "Coordinator"
+def test_system_roles_have_valid_soul():
+    """Every system role must have an identity in its soul config."""
+    for role in SYSTEM_ROLES:
+        assert "identity" in role.soul
+        assert "name" in role.soul["identity"]
+        assert "role" in role.soul["identity"]
+        assert len(role.soul["identity"]["role"]) > 0
 
 
-def test_archivist_purpose():
-    assert Archivist.name == "Archivist"
+def test_system_roles_have_template_ids():
+    """System roles use system/ namespace for template_id."""
+    for role in SYSTEM_ROLES:
+        assert role.template_id.startswith("system/")
 
 
-def test_auditor_purpose():
-    assert Auditor.name == "Auditor"
+def test_system_roles_count():
+    assert len(SYSTEM_ROLES) == 3
