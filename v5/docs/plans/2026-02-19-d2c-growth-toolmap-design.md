@@ -1,10 +1,11 @@
 # D2C Growth Complete Tool Map + DataOps Role
 
-> Two-role design: D2C Growth (10 operators, ~58 tools) + DataOps (3 operators, ~8 tools).
+> Two-role design: D2C Growth (10 operators, ~56 tools) + DataOps (3 operators, ~8 tools).
 > Replaces and extends `2026-02-19-adops-multi-platform-design.md`.
+> **Updated 2026-02-19:** SDK/API feasibility validated. Heatmaps dropped (Clarity API too limited).
 
 **Date:** 2026-02-19
-**Status:** Design
+**Status:** Design (validated)
 **Depends on:** D2C Phase 1 (complete), V5 SDK v1.0.0
 
 ---
@@ -432,8 +433,9 @@ class AnalyticsProvider(Protocol):
 
 **MixpanelProvider:**
 ```python
-# SDK: mixpanel-utils or direct HTTP (Mixpanel Data Export API + Query API)
-# Auth: Service Account (project_id + service_account_username + service_account_secret)
+# No read SDK — `mixpanel` PyPI package is write-only (event ingestion).
+# Must build custom wrapper using direct HTTP against Query API.
+# Auth: Service Account (HTTP Basic: service_account_username:service_account_secret)
 # Endpoints:
 #   - /api/2.0/export — raw event export
 #   - /api/2.0/insights — JQL queries
@@ -725,7 +727,11 @@ campaign = klaviyo.Campaigns.create_campaign(body={
 ## 7. CROps (Expanded)
 
 **Current state:** GA4 read + Shopify page read/update, 3 agent nodes.
-**Expanded:** Shopify full + Heatmaps + A/B Testing, 6 agent nodes. All analytics via DataOps.
+**Expanded:** Shopify full + A/B Testing, 6 agent nodes. All analytics via DataOps.
+
+> **Note:** Microsoft Clarity was evaluated for heatmaps but dropped — API limited to
+> 10 req/day/project, no individual heatmap or recording access. Qualitative UX data
+> (session recordings, heatmaps) remains a human-review activity via Clarity UI.
 
 ### 7.1 Tools
 
@@ -737,10 +743,8 @@ campaign = klaviyo.Campaigns.create_campaign(body={
 | `shopify_discounts` | Shopify Admin API | Create/manage price rules + discount codes | Automatic + code-based. Amount/percentage/BXGY/free shipping. |
 | `shopify_page_read` | Shopify Admin API | Read page content | Existing |
 | `shopify_page_update` | Shopify Admin API | Update page content | Existing. Human approval required. |
-| `heatmap_read` | Microsoft Clarity | Read heatmap data, scroll depth, dead clicks, rage clicks | Clarity API: `GET /export/{projectId}/` |
-| `heatmap_recordings` | Microsoft Clarity | Get session recording summaries | Filter by page, device, user segment |
-| `ab_test_read` | VWO | Read experiment status, variant performance, significance | `GET /experiments/{id}` |
-| `ab_test_manage` | VWO | Create/start/stop/archive experiments | `POST /experiments`. Human approval for start. |
+| `ab_test_read` | VWO REST API | Read experiment status, variant performance, significance | `GET /experiments/{id}`. Direct HTTP, no Python SDK for management. |
+| `ab_test_manage` | VWO REST API | Create/start/stop/archive experiments | `POST /experiments`. Human approval for start. |
 
 Note: `ga4_read` is removed from CROps tools. All analytics queries go through DataOps `analytics_*` tools.
 
@@ -749,11 +753,11 @@ Note: `ga4_read` is removed from CROps tools. All analytics queries go through D
 | Node | System Prompt Focus | Tools + DataOps | Output Key | Approval |
 |------|-------------------|----------------|------------|----------|
 | `experiment_analyze` | Read A/B test results from VWO. Cross-validate with DataOps analytics (Mixpanel funnel for test variants). Require statistical significance (p<0.05, min 1000 visitors/variant). Compare conversion uplift vs revenue uplift (they can diverge). Recommend: declare winner, extend test, or kill. | ab_test_read, analytics_query_funnel | `analysis` | None |
-| `funnel_diagnose` | Full funnel: sessions → PDP view → scroll → add to cart → checkout → purchase. Pull from DataOps (Mixpanel funnel). Overlay with heatmap data (Clarity) — where do users actually look? Where do they rage-click? Identify top 3 bottlenecks. Compare traffic quality by source (organic vs paid vs email). | analytics_query_funnel, heatmap_read, heatmap_recordings | `diagnosis` | None |
-| `page_optimize` | Read current page from Shopify. Read heatmap for that page (scroll depth, click patterns). Read winning narrative from shared memory. Propose specific changes (headline, CTA, body). Show before/after. If A/B testing available, recommend test instead of direct change. | shopify_page_read, shopify_page_update, heatmap_read, ab_test_manage, shared_memory | `optimization_result` | Human required |
-| `product_optimize` | Analyze product performance: views → add-to-cart → purchase rate by product. Identify underperformers. Compare product page scroll depth and click patterns via heatmaps. Recommend: title/description changes, image reorder, pricing adjustments, collection placement. | shopify_products, analytics_query_metrics, heatmap_read | `product_result` | Human for price changes |
+| `funnel_diagnose` | Full funnel: sessions → PDP view → scroll → add to cart → checkout → purchase. Pull from DataOps (Mixpanel funnel). Identify top 3 bottlenecks. Compare traffic quality by source (organic vs paid vs email). Suggest checking Clarity recordings for qualitative diagnosis of drop-off points. | analytics_query_funnel, analytics_query_events | `diagnosis` | None |
+| `page_optimize` | Read current page from Shopify. Read winning narrative from shared memory. Propose specific changes (headline, CTA, body). Show before/after. If A/B testing available, recommend test instead of direct change. Reference Clarity recordings if available for context. | shopify_page_read, shopify_page_update, ab_test_manage, shared_memory | `optimization_result` | Human required |
+| `product_optimize` | Analyze product performance: views → add-to-cart → purchase rate by product (via DataOps Mixpanel funnel). Identify underperformers. Recommend: title/description changes, image reorder, pricing adjustments, collection placement. | shopify_products, analytics_query_metrics, analytics_query_funnel | `product_result` | Human for price changes |
 | `discount_strategy` | Analyze past discount performance: incremental revenue vs margin erosion. Create targeted discounts for specific segments (cart abandoners, first-time buyers, winback). Set automatic discounts for collection-level promotions. Measure lift vs baseline. | shopify_discounts, shopify_orders, analytics_query_metrics | `discount_result` | Human required |
-| `conversion_report` | Weekly CRO report. Overall CVR trend. Funnel metrics. Active experiment results. Top heatmap insights. Page performance ranking. Revenue impact of changes. Progressive disclosure. | analytics_query_metrics, analytics_query_funnel, ab_test_read, heatmap_read | `conversion_report` | None |
+| `conversion_report` | Weekly CRO report. Overall CVR trend. Funnel metrics. Active experiment results. Page performance ranking. Revenue impact of changes. Progressive disclosure. | analytics_query_metrics, analytics_query_funnel, ab_test_read | `conversion_report` | None |
 
 ### 7.3 Workflows
 
@@ -765,20 +769,20 @@ Note: `ga4_read` is removed from CROps tools. All analytics queries go through D
 | `cro_conversion_report` | conversion_report + product_optimize | Scheduled | Weekly |
 | `cro_discount_strategy` | discount_strategy | Manual / Scheduled | Monthly or event-driven |
 
-### 7.4 Heatmap + A/B Testing Details
-
-**Microsoft Clarity** (chosen over Hotjar):
-- Free, unlimited traffic
-- API for data export (heatmaps, recordings, metrics)
-- Integrates with GA4
-- Session recordings with rage click / dead click / quick back detection
-- Env: `CLARITY_PROJECT_ID`, `CLARITY_API_KEY`
+### 7.4 A/B Testing Details
 
 **VWO** (Visual Website Optimizer):
 - Server-side + client-side testing
-- API for experiment management
+- **REST API for experiment management** — direct HTTP, no Python SDK for CRUD/reports
+- **`vwo-fme-python-sdk`** for runtime feature flag evaluation (decides which variant a user sees)
 - Bayesian statistics (faster decisions than frequentist)
 - Env: `VWO_ACCOUNT_ID`, `VWO_API_KEY`
+
+**Microsoft Clarity** (human-review only, not automated):
+- Free, unlimited traffic, installed on site
+- Provides heatmaps, session recordings, rage click / dead click detection
+- **API too limited for automation** (10 req/day, no heatmap/recording access)
+- CROps reports reference Clarity for qualitative follow-up but don't query it
 
 ---
 
@@ -914,8 +918,8 @@ shopify-api = ">=12.0"             # Shopify Admin API (exists, expanded usage)
 klaviyo-api = ">=9.0"              # Klaviyo email marketing
 
 # CRO
-# Microsoft Clarity — direct HTTP (no SDK)
-# VWO — direct HTTP (no SDK)
+# VWO — direct HTTP via httpx (REST API for management, FME SDK for runtime)
+# Microsoft Clarity — dropped from automation (API too limited)
 
 # Infrastructure
 tenacity = ">=8.0"                 # Retry with exponential backoff (all platforms)
@@ -966,11 +970,9 @@ SHOPIFY_STORE, SHOPIFY_ACCESS_TOKEN
 KLAVIYO_PRIVATE_API_KEY
 
 # --- CRO ---
-# Microsoft Clarity
-CLARITY_PROJECT_ID, CLARITY_API_KEY
-
 # VWO
 VWO_ACCOUNT_ID, VWO_API_KEY
+# Note: Microsoft Clarity dropped from automation (API too limited). No env vars needed.
 ```
 
 ### 10.3 Test Strategy
@@ -986,9 +988,9 @@ VWO_ACCOUNT_ID, VWO_API_KEY
 | PinterestAdOps | `test_pinterest_ad_ops.py`, `test_pinterest_ads_tools.py` | ~30 |
 | CrossPlatformOps | `test_cross_platform_ops.py` | ~20 |
 | EmailOps | `test_email_ops.py`, `test_klaviyo_tools.py` | ~35 |
-| CROps (expanded) | `test_cro_ops.py`, `test_shopify_tools.py`, `test_heatmap_tools.py`, `test_ab_testing_tools.py` | ~40 |
+| CROps (expanded) | `test_cro_ops.py`, `test_shopify_tools.py`, `test_ab_testing_tools.py` | ~35 |
 | Integration | `test_integration.py` (DataOps ↔ D2C Growth) | ~15 |
-| **Total** | | **~355** |
+| **Total** | | **~350** |
 
 Each module has:
 - **Unit tests:** Mock API responses, verify tool function logic
@@ -1062,7 +1064,7 @@ Each module has:
 | **Agent Nodes** | ~55 (6 DataOps + 49 D2C Growth) |
 | **Workflows** | ~42 (5 DataOps + 37 D2C Growth) |
 | **New Tests** | ~355 |
-| **External APIs** | 13 (Mixpanel, GA4, Redshift, Meta, Google, Amazon, TikTok, LinkedIn, Pinterest, Shopify, Klaviyo, Clarity, VWO) |
+| **External APIs** | 12 (Mixpanel, GA4, Redshift, Meta, Google, Amazon, TikTok, LinkedIn, Pinterest, Shopify, Klaviyo, VWO) |
 | **Environment Variables** | ~35 |
 | **Implementation Tasks** | 37 |
 
@@ -1073,12 +1075,52 @@ Each module has:
 1. **Mixpanel access:** What's the current Mixpanel project setup? Service account credentials available?
 2. **Redshift access:** Connection details? IAM or password auth? Any query restrictions or pre-built views?
 3. **Amazon marketplace scope:** US only or multi-market?
-4. **TikTok Shop:** Website-only or TikTok Shop too?
-5. **LinkedIn B2B angle:** Concrete B2B hardware use cases? If not, minimize allocation.
-6. **Pinterest catalog:** Is Shopify product feed already connected to Pinterest?
-7. **CRM integration:** Salesforce/HubSpot for cross-platform attribution?
-8. **Creative pipeline:** Who produces ad creatives, especially for TikTok (20-50 variations/month)?
-9. **Clarity vs Hotjar:** Clarity is free + has API. Confirm this is preferred over Hotjar.
+4. **Amazon MCP Server:** Amazon Ads MCP Server entered open beta Feb 2026. Evaluate as alternative to `python-amazon-ad-api` for agent integration?
+5. **TikTok Shop:** Website-only or TikTok Shop too?
+6. **LinkedIn B2B angle:** Concrete B2B hardware use cases? If not, minimize allocation.
+7. **Pinterest catalog:** Is Shopify product feed already connected to Pinterest?
+8. **CRM integration:** Salesforce/HubSpot for cross-platform attribution?
+9. **Creative pipeline:** Who produces ad creatives, especially for TikTok (20-50 variations/month)?
 10. **VWO vs alternatives:** VWO preferred for A/B testing? Or use Shopify's built-in A/B (limited)?
 11. **Existing ETL:** What ETL pipelines exist for Redshift? What tables/views are available?
 12. **Live credentials:** When will sandbox/test credentials be available per platform?
+
+---
+
+## Appendix A: SDK/API Validation (Feb 2026)
+
+Research conducted to validate all implementation assumptions against current API/SDK reality.
+
+### Green — Ready to implement
+
+| Platform | Package | PyPI Version | Last Release | Auth | Notes |
+|----------|---------|-------------|-------------|------|-------|
+| Meta Ads | `facebook-business` | 24.0.1 | Nov 2024 | System User token (non-expiring) | Must use unified Advantage+ (legacy ASC deprecated). CAPI v2 supported. v25.0 expected Q1 2026. |
+| Google Ads | `google-ads` | 29.1.0 | Feb 2026 | OAuth2 refresh token or Service Account | GAQL stable. PMax fully accessible + channel reporting in v23. `load_from_dict()` for secrets. Pin API v22+. |
+| Amazon Ads | `python-amazon-ad-api` | 0.6.9 | Feb 2026 | LWA OAuth2 (60-min access, non-expiring refresh) | Community lib, de facto standard. SP v3 + SB v4 + Reporting v3. Old sandbox deprecated → use Test Accounts API. **Also: Amazon Ads MCP Server in open beta.** |
+| Klaviyo | `klaviyo-api` | 22.0.0 | Jan 2026 | Private API key (simple, non-expiring) | Full coverage. Pydantic V2 dep — watch for conflicts. Rapid version churn (10 majors in 5 months). |
+| Mixpanel (write) | `mixpanel` | 5.1.0 | Jan 2026 | Project token (ingest) | Write-only. For reads, need custom HTTP wrapper. |
+
+### Yellow — Usable with workarounds
+
+| Platform | Package | PyPI Version | Issue | Mitigation |
+|----------|---------|-------------|-------|------------|
+| TikTok Ads | `tiktok-business-api-sdk-official` | 1.1.2 (Jan 2026) | Swagger-generated, verbose. | Use `httpx` direct. **Key correction: advertiser access tokens are NON-EXPIRING** (not 24h). Only creator tokens expire. |
+| Pinterest Ads | `pinterest-api-sdk` | 0.2.6 (Sep 2025) | Analytics/reporting NOT in SDK. | Use SDK for campaign CRUD, `httpx` for async reporting. |
+| VWO | `vwo-fme-python-sdk` | 1.17.0 | FME SDK = runtime flag eval only. Experiment management = REST API. | Use `httpx` for REST API (CRUD experiments, read results). FME SDK for variant assignment. |
+| Mixpanel (read) | None | N/A | No read SDK exists. | Build custom `httpx` wrapper for Query API: `/api/2.0/insights`, `/api/2.0/funnels`, `/api/2.0/retention`. Service Account Basic Auth. |
+
+### Red — Dropped or changed
+
+| Platform | Original Plan | Reality | Decision |
+|----------|-------------|---------|----------|
+| Microsoft Clarity | `heatmap_read` + `heatmap_recordings` tools | API: 10 req/day, 1000 rows/req, no heatmap/recording access | **Dropped from automation.** Clarity stays installed for human review. CROps reports reference it but don't query it. |
+| LinkedIn SDK | `linkedin-api-client` as option | v0.3.0, last release Jun 2023, 18 months stale | **Use `httpx` only.** Already specified as primary in design. Remove SDK mention. |
+
+### Key Design Corrections
+
+1. **TikTok auth:** Advertiser tokens are non-expiring. Remove "schedule daily refresh" from TikTok operator design.
+2. **Heatmaps:** Removed from CROps tools. CROps uses Mixpanel funnels + VWO experiments for quantitative CRO. Clarity is human-review-only.
+3. **Mixpanel read:** DataOps `MixpanelProvider` must be built from scratch (direct HTTP, Service Account auth). Not a lot of code but no SDK to lean on.
+4. **Pinterest reporting:** Separate from SDK. Use SDK for writes, `httpx` for async report reads.
+5. **Amazon MCP Server:** New option (open beta Feb 2026). Worth evaluating as alternative or complement to `python-amazon-ad-api` for agent-native integration.
