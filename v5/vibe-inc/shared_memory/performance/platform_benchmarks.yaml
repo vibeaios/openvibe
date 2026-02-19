@@ -1,0 +1,57 @@
+# Platform benchmarks — targets for all ad platforms + cross-platform allocation.
+# Maintained by D2C Growth operators. Referenced by daily_optimize and weekly_report.
+
+meta:
+  bot_target_cpa: 400
+  dot_target_cpa: 300
+  board_target_cpa: null  # not yet advertising
+  frequency_cap: 3
+  attribution_window: "7d_click_1d_view"
+
+google:
+  bot_target_cpa: 300
+  dot_target_cpa: 250
+  min_quality_score: 5
+  search_impression_share_target: 0.7
+
+amazon:
+  bot_target_acos: 0.20
+  dot_target_acos: 0.18
+  tacos_target: 0.10
+  harvest_threshold_clicks: 20
+  harvest_min_orders: 2
+
+tiktok:
+  bot_target_cpa: 500
+  dot_target_cpa: 400
+  learning_phase_budget_multiplier: 30
+  creative_fatigue_days: 10
+  min_creatives_per_adgroup: 3
+
+linkedin:
+  target_cpl: 150
+  min_audience_size: 50000
+  max_audience_size: 400000
+  frequency_target_monthly: 7
+  min_data_days_before_optimize: 14
+
+pinterest:
+  bot_target_cpa: 350
+  dot_target_cpa: 280
+  min_outbound_ctr: 0.005
+  actalike_source_min_size: 100
+
+cross_platform:
+  total_monthly_budget: null  # set by finance
+  budget_split:
+    google: 0.37
+    meta: 0.28
+    amazon: 0.18
+    tiktok: 0.10
+    linkedin: 0.02
+    pinterest: 0.00  # not yet active
+    testing: 0.05
+  rebalance_threshold_cpa: 1.2
+  rebalance_threshold_roas: 1.3
+  min_platform_budget_pct: 0.05
+  max_platform_budget_pct: 0.45
