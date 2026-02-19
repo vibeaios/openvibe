@@ -8,18 +8,18 @@ class FakeLLM:
 
 def test_daily_optimize_graph_compiles():
     from vibe_inc.roles.d2c_growth.workflows import create_daily_optimize_graph
-    from vibe_inc.roles.d2c_growth.ad_ops import AdOps
+    from vibe_inc.roles.d2c_growth.meta_ad_ops import MetaAdOps
 
-    op = AdOps(llm=FakeLLM())
+    op = MetaAdOps(llm=FakeLLM())
     graph = create_daily_optimize_graph(op)
     assert graph is not None
 
 
 def test_daily_optimize_graph_invokes():
     from vibe_inc.roles.d2c_growth.workflows import create_daily_optimize_graph
-    from vibe_inc.roles.d2c_growth.ad_ops import AdOps
+    from vibe_inc.roles.d2c_growth.meta_ad_ops import MetaAdOps
 
-    op = AdOps(llm=FakeLLM())
+    op = MetaAdOps(llm=FakeLLM())
     graph = create_daily_optimize_graph(op)
     result = graph.invoke({"date": "2026-02-19"})
     assert "optimization_result" in result
@@ -27,9 +27,9 @@ def test_daily_optimize_graph_invokes():
 
 def test_campaign_create_graph_compiles():
     from vibe_inc.roles.d2c_growth.workflows import create_campaign_create_graph
-    from vibe_inc.roles.d2c_growth.ad_ops import AdOps
+    from vibe_inc.roles.d2c_growth.meta_ad_ops import MetaAdOps
 
-    op = AdOps(llm=FakeLLM())
+    op = MetaAdOps(llm=FakeLLM())
     graph = create_campaign_create_graph(op)
     assert graph is not None
 

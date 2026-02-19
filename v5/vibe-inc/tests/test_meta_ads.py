@@ -13,7 +13,7 @@ def test_meta_ads_read_returns_campaign_data():
     mock_account = MagicMock()
     mock_account.get_campaigns.return_value = [mock_campaign]
 
-    with patch("vibe_inc.tools.meta_ads._get_account", return_value=mock_account):
+    with patch("vibe_inc.tools.ads.meta_ads._get_account", return_value=mock_account):
         result = meta_ads_read(level="campaign", date_range="last_7d")
 
     assert "rows" in result
@@ -34,7 +34,7 @@ def test_meta_ads_read_accepts_date_range():
     mock_account = MagicMock()
     mock_account.get_campaigns.return_value = []
 
-    with patch("vibe_inc.tools.meta_ads._get_account", return_value=mock_account):
+    with patch("vibe_inc.tools.ads.meta_ads._get_account", return_value=mock_account):
         result = meta_ads_read(level="campaign", date_range="2026-02-01,2026-02-15")
 
     assert result["date_range"] == "2026-02-01,2026-02-15"
@@ -47,7 +47,7 @@ def test_meta_ads_read_supports_adset_level():
     mock_account = MagicMock()
     mock_account.get_ad_sets.return_value = []
 
-    with patch("vibe_inc.tools.meta_ads._get_account", return_value=mock_account):
+    with patch("vibe_inc.tools.ads.meta_ads._get_account", return_value=mock_account):
         result = meta_ads_read(level="adset", date_range="last_7d")
 
     assert result["level"] == "adset"
@@ -68,9 +68,9 @@ def test_meta_ads_create_returns_ids():
     mock_ad = MagicMock()
     mock_ad.__getitem__ = MagicMock(return_value="ad_789")
 
-    with patch("vibe_inc.tools.meta_ads._get_account", return_value=mock_account), \
-         patch("vibe_inc.tools.meta_ads._create_adset", return_value=mock_adset), \
-         patch("vibe_inc.tools.meta_ads._create_ad", return_value=mock_ad):
+    with patch("vibe_inc.tools.ads.meta_ads._get_account", return_value=mock_account), \
+         patch("vibe_inc.tools.ads.meta_ads._create_adset", return_value=mock_adset), \
+         patch("vibe_inc.tools.ads.meta_ads._create_ad", return_value=mock_ad):
         result = meta_ads_create(
             campaign_name="Bot - Foundation Test",
             objective="OUTCOME_SALES",
@@ -96,7 +96,7 @@ def test_meta_ads_update_changes_status():
     mock_obj = MagicMock()
     mock_obj.api_update.return_value = True
 
-    with patch("vibe_inc.tools.meta_ads._get_object", return_value=mock_obj):
+    with patch("vibe_inc.tools.ads.meta_ads._get_object", return_value=mock_obj):
         result = meta_ads_update(
             object_type="campaign",
             object_id="camp_123",

@@ -8,15 +8,15 @@ class FakeLLM:
 
 
 def test_full_loop_daily_optimize_then_experiment_analyze():
-    """Simulate a daily loop: AdOps optimize → CROps analyze."""
+    """Simulate a daily loop: MetaAdOps optimize → CROps analyze."""
     from vibe_inc.main import create_runtime
 
     runtime = create_runtime(llm=FakeLLM())
 
-    # Step 1: AdOps daily optimize
+    # Step 1: MetaAdOps daily optimize
     opt_result = runtime.activate(
         role_id="d2c_growth",
-        operator_id="ad_ops",
+        operator_id="meta_ad_ops",
         workflow_id="daily_optimize",
         input_data={"date": "2026-02-19"},
     )
@@ -40,7 +40,7 @@ def test_full_loop_campaign_create():
 
     result = runtime.activate(
         role_id="d2c_growth",
-        operator_id="ad_ops",
+        operator_id="meta_ad_ops",
         workflow_id="campaign_create",
         input_data={"brief": {
             "product": "bot",

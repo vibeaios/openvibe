@@ -20,7 +20,7 @@ def test_runtime_activates_daily_optimize():
     runtime = create_runtime(llm=FakeLLM())
     result = runtime.activate(
         role_id="d2c_growth",
-        operator_id="ad_ops",
+        operator_id="meta_ad_ops",
         workflow_id="daily_optimize",
         input_data={"date": "2026-02-19"},
     )

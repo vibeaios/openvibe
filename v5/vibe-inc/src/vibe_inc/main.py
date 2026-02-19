@@ -26,10 +26,10 @@ def create_runtime(llm) -> RoleRuntime:
     """
     runtime = RoleRuntime(roles=[D2CGrowth, DataOps], llm=llm)
 
-    # AdOps workflows
-    runtime.register_workflow("ad_ops", "campaign_create", create_campaign_create_graph)
-    runtime.register_workflow("ad_ops", "daily_optimize", create_daily_optimize_graph)
-    runtime.register_workflow("ad_ops", "weekly_report", create_weekly_report_graph)
+    # MetaAdOps workflows
+    runtime.register_workflow("meta_ad_ops", "campaign_create", create_campaign_create_graph)
+    runtime.register_workflow("meta_ad_ops", "daily_optimize", create_daily_optimize_graph)
+    runtime.register_workflow("meta_ad_ops", "weekly_report", create_weekly_report_graph)
 
     # CROps workflows
     runtime.register_workflow("cro_ops", "experiment_analyze", create_experiment_analyze_graph)
