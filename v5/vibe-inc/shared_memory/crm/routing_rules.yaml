@@ -1,0 +1,18 @@
+# CRM workflow routing rules — maps signals to HubSpot workflows.
+# Used by CRMOps.workflow_trigger to determine enrollment targets.
+
+signals:
+  high_value_d2c:
+    condition: "order_total > $500 AND enrichment_status = unknown"
+    workflow_id: "nurture_high_value"
+    description: "High-value D2C buyer not yet enriched — nurture for upsell"
+
+  b2b_enriched:
+    condition: "enrichment_status = enriched AND company_size >= 50"
+    workflow_id: "b2b_onboarding"
+    description: "Enrichment reveals B2B buyer — route to sales pipeline"
+
+  repeat_buyer:
+    condition: "order_count >= 2 AND days_since_last < 90"
+    workflow_id: "loyalty_program"
+    description: "Repeat purchaser within 90 days — loyalty nurture"

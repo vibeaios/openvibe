@@ -1,0 +1,25 @@
+# B2B deal pipeline configuration for HubSpot CRM.
+# Used by CRMOps.deal_manage and CRMOps.pipeline_review.
+
+pipelines:
+  b2b:
+    stages:
+      - lead
+      - mql
+      - sql
+      - proposal
+      - closed_won
+      - closed_lost
+    stale_threshold_days: 14
+    target_close_rate: 0.15
+
+products:
+  bot:
+    avg_deal_value: 3000
+    typical_cycle_days: 45
+  dot:
+    avg_deal_value: 1500
+    typical_cycle_days: 30
+  board:
+    avg_deal_value: 15000
+    typical_cycle_days: 90
