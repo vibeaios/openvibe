@@ -53,6 +53,14 @@ from vibe_inc.roles.d2c_growth.email_workflows import (
     create_email_segment_refresh_graph,
     create_email_lifecycle_report_graph,
 )
+from vibe_inc.roles.d2c_strategy import D2CStrategy
+from vibe_inc.roles.d2c_strategy.workflows import (
+    create_define_framework_graph,
+    create_refine_icp_graph,
+    create_threat_assess_graph,
+    create_validate_story_graph,
+    create_weekly_scan_graph,
+)
 from vibe_inc.roles.data_ops import DataOps
 from vibe_inc.roles.data_ops.workflows import (
     create_build_report_graph,
@@ -67,7 +75,7 @@ def create_runtime(llm) -> RoleRuntime:
 
     Registers all roles and workflow factories.
     """
-    runtime = RoleRuntime(roles=[D2CGrowth, DataOps], llm=llm)
+    runtime = RoleRuntime(roles=[D2CGrowth, D2CStrategy, DataOps], llm=llm)
 
     # MetaAdOps workflows
     runtime.register_workflow("meta_ad_ops", "campaign_create", create_meta_campaign_create_graph)
@@ -131,6 +139,15 @@ def create_runtime(llm) -> RoleRuntime:
     runtime.register_workflow("crm_ops", "deal_progression", create_deal_progression_graph)
     runtime.register_workflow("crm_ops", "enrichment_audit", create_enrichment_audit_graph)
     runtime.register_workflow("crm_ops", "pipeline_health", create_pipeline_health_graph)
+
+    # PositioningEngine workflows
+    runtime.register_workflow("positioning_engine", "define_framework", create_define_framework_graph)
+    runtime.register_workflow("positioning_engine", "validate_story", create_validate_story_graph)
+    runtime.register_workflow("positioning_engine", "refine_icp", create_refine_icp_graph)
+
+    # CompetitiveIntel workflows
+    runtime.register_workflow("competitive_intel", "weekly_scan", create_weekly_scan_graph)
+    runtime.register_workflow("competitive_intel", "threat_assess", create_threat_assess_graph)
 
     # CatalogOps workflows
     runtime.register_workflow("catalog_ops", "catalog_audit", create_catalog_audit_graph)

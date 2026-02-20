@@ -1,0 +1,27 @@
+# Market Signals — updated by CompetitiveIntel.weekly_scan
+# Template: populated by agent during weekly scans
+
+last_scan: null
+scan_period: null
+
+signals:
+  major: []
+  # Example:
+  # - competitor: Limitless
+  #   type: product_launch
+  #   summary: "Launched v2 pendant with 24h battery"
+  #   date: "2026-02-15"
+  #   risk: high
+
+  minor: []
+  # Example:
+  # - competitor: Owl Labs
+  #   type: blog_post
+  #   summary: "Published comparison vs Jabra PanaCast"
+  #   date: "2026-02-14"
+  #   risk: low
+
+risk_summary:
+  bot: null
+  dot: null
+  board: null

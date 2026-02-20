@@ -1,0 +1,54 @@
+# Competitor Registry — tracked by CompetitiveIntel operator
+# Organized by Vibe product category
+
+bot:
+  description: "AI meeting device (~$1,599-$2,000)"
+  competitors:
+    - name: Owl Labs
+      url: https://owllabs.com
+      category: meeting_hardware
+      threat_level: medium
+      notes: "Meeting Owl 3 — 360 camera, no AI extraction"
+    - name: Otter.ai
+      url: https://otter.ai
+      category: meeting_software
+      threat_level: medium
+      notes: "Software transcription — no hardware, must be activated"
+    - name: Jabra
+      url: https://www.jabra.com
+      category: meeting_hardware
+      threat_level: low
+      notes: "PanaCast line — video bars, no AI layer"
+
+dot:
+  description: "AI memory assistant (~$249-$279)"
+  competitors:
+    - name: Limitless
+      url: https://limitless.ai
+      category: wearable_ai
+      threat_level: high
+      notes: "Pendant — always-on AI capture, strong VC backing"
+    - name: Plaud
+      url: https://plaud.ai
+      category: wearable_ai
+      threat_level: medium
+      notes: "NotePin — AI recording device, similar form factor"
+    - name: Rewind
+      url: https://rewind.ai
+      category: memory_software
+      threat_level: low
+      notes: "Software-only — records screen + audio, no hardware"
+
+board:
+  description: "Interactive whiteboard (~$3,699-$7,299)"
+  competitors:
+    - name: Microsoft Surface Hub
+      url: https://www.microsoft.com/en-us/surface/business/surface-hub-3
+      category: interactive_display
+      threat_level: high
+      notes: "Surface Hub 3 — Teams integration, enterprise distribution"
+    - name: Samsung Flip
+      url: https://www.samsung.com/us/business/displays/interactive-displays/
+      category: interactive_display
+      threat_level: medium
+      notes: "Flip Pro — lower price point, broad channel"

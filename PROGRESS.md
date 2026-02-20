@@ -7,7 +7,7 @@
 ## Current State
 
 **Version:** V5 — Platform Prototype
-**Phase:** D2C Growth toolmap complete (10 operators, 48 workflows, ~62 tools)
+**Phase:** D2C Growth + D2C Strategy complete (12 operators, 53 workflows, ~64 tools)
 
 | Package | Path | Version | Tests |
 |---------|------|---------|-------|
@@ -15,9 +15,9 @@
 | openvibe-runtime | `v5/openvibe-runtime/` | v1.0.0 | 28 |
 | openvibe-platform | `v5/openvibe-platform/` | v1.0.0 | 60 |
 | openvibe-cli | `v5/openvibe-cli/` | v1.0.0 | 15 |
-| vibe-inc | `v5/vibe-inc/` | v0.1.0 | 331 |
+| vibe-inc | `v5/vibe-inc/` | v0.1.0 | 367 |
 
-**Total: 713 tests passing, 2 skipped (real API)**
+**Total: 749 tests passing, 2 skipped (real API)**
 
 ## What's Built
 
@@ -74,6 +74,21 @@
 |----------|-----------|-------|----------|
 | CRMOps | workflow_enrollment, deal_progression, enrichment_audit, pipeline_health | hubspot (6 tools) | HubSpot API v3 |
 
+### D2C Strategy (complete)
+
+**D2CStrategy role** — 2 operators, 5 workflows, 2 new tools:
+- Soul with positioning/ICP/competitive principles + escalation rules
+- Web tools: `web_search` (Brave Search API), `web_fetch` (HTTP GET, truncated)
+
+| Operator | Workflows | Tools | Purpose |
+|----------|-----------|-------|---------|
+| PositioningEngine | define_framework, validate_story, refine_icp | read_memory, write_memory, ga4_read | Messaging frameworks + ICP definitions |
+| CompetitiveIntel | weekly_scan, threat_assess | web_search, web_fetch, read_memory, write_memory | Competitive monitoring + threat analysis |
+
+**Shared memory added:**
+- `competitive/competitor_registry.yaml` — Bot/Dot/Board competitor tracking
+- `competitive/market-signals.yaml` — weekly scan output template
+
 **DataOps role** — 3 operators, 4 workflows:
 - CatalogOps: catalog_audit
 - QualityOps: freshness_check
@@ -88,7 +103,7 @@
 - CRM config: routing rules (3 signals), pipeline config (B2B stages, product targets)
 
 **Applications scaffolded:**
-- `v5/vibe-inc/` — src layout, hatchling build, full test suite (331 tests)
+- `v5/vibe-inc/` — src layout, hatchling build, full test suite (367 tests)
 - `v5/astrocrest/` — soul.yaml + roles.yaml + scoring.yaml (6 roles, not yet implemented)
 
 ## Key Docs
@@ -103,11 +118,12 @@
 - `v5/docs/plans/2026-02-19-d2c-growth-toolmap-implementation.md` — D2C Growth toolmap plan (37 tasks, complete)
 - `v5/docs/plans/2026-02-20-hubspot-crm-ops-design.md` — HubSpot CRMOps design (10th operator)
 - `v5/docs/plans/2026-02-20-hubspot-crm-ops-implementation.md` — HubSpot CRMOps implementation (11 tasks, complete)
+- `v5/docs/plans/2026-02-20-d2c-strategy-implementation.md` — D2C Strategy implementation (10 tasks, complete)
 
 ## Not Yet Done
 
 - **No real API calls yet** — tools implemented with mock tests only, no live credentials tested
-- **D2C Content + D2C Strategy** — D2C design has 3 roles, only D2C Growth built
+- **D2C Content** — D2C design has 3 roles; Growth + Strategy built, Content remaining
 - **HubSpot CRMOps built** — 6 tools, 4 workflows, but no live API credentials tested yet
 - **Phase 3 gate not passed** — needs 3 Vibe Inc roles live + 1 end-to-end workflow with real APIs
 - **Known debt** (documented in DESIGN.md §6-7):
@@ -123,4 +139,4 @@
 
 ---
 
-*Updated: 2026-02-20 — CRMOps complete: 10 operators, 48 workflows, 331 vibe-inc tests (713 total)*
+*Updated: 2026-02-20 — D2C Strategy complete: 12 operators, 53 workflows, 367 vibe-inc tests (749 total)*

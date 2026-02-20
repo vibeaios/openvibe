@@ -1,6 +1,6 @@
-"""Integration tests: DataOps ↔ D2C Growth interaction.
+"""Integration tests: DataOps ↔ D2C Growth ↔ D2C Strategy interaction.
 
-Verifies that operators from both roles can be activated through the runtime,
+Verifies that operators from all roles can be activated through the runtime,
 and that the full workflow pipeline (activate → graph → operator → result) works
 across all major operator types.
 """
@@ -269,11 +269,12 @@ def test_cross_platform_health_check_activates():
     assert "health_result" in result
 
 
-def test_runtime_has_both_roles():
-    """Runtime should have both D2C Growth and DataOps roles."""
+def test_runtime_has_all_roles():
+    """Runtime should have D2C Growth, D2C Strategy, and DataOps roles."""
     runtime = _runtime()
     role_ids = [r.role_id for r in runtime.list_roles()]
     assert "d2c_growth" in role_ids
+    assert "d2c_strategy" in role_ids
     assert "data_ops" in role_ids
 
 
@@ -283,3 +284,66 @@ def test_runtime_d2c_growth_operator_count():
     d2c = next(r for r in runtime.list_roles() if r.role_id == "d2c_growth")
     # Meta, Google, Amazon, TikTok, LinkedIn, Pinterest, Email, CRO, CrossPlatform, CRM
     assert len(d2c.operators) >= 10
+
+
+# --- D2C Strategy workflows ---
+
+
+def test_strategy_define_framework_activates():
+    """PositioningEngine define_framework workflow runs through runtime."""
+    runtime = _runtime()
+    result = runtime.activate(
+        role_id="d2c_strategy",
+        operator_id="positioning_engine",
+        workflow_id="define_framework",
+        input_data={"product": "bot"},
+    )
+    assert "framework_result" in result
+
+
+def test_strategy_validate_story_activates():
+    """PositioningEngine validate_story workflow runs through runtime."""
+    runtime = _runtime()
+    result = runtime.activate(
+        role_id="d2c_strategy",
+        operator_id="positioning_engine",
+        workflow_id="validate_story",
+        input_data={"product": "bot", "experiment_id": "exp-001"},
+    )
+    assert "validation_result" in result
+
+
+def test_strategy_refine_icp_activates():
+    """PositioningEngine refine_icp workflow runs through runtime."""
+    runtime = _runtime()
+    result = runtime.activate(
+        role_id="d2c_strategy",
+        operator_id="positioning_engine",
+        workflow_id="refine_icp",
+        input_data={"product": "dot"},
+    )
+    assert "icp_result" in result
+
+
+def test_strategy_weekly_scan_activates():
+    """CompetitiveIntel weekly_scan workflow runs through runtime."""
+    runtime = _runtime()
+    result = runtime.activate(
+        role_id="d2c_strategy",
+        operator_id="competitive_intel",
+        workflow_id="weekly_scan",
+        input_data={"period": "last_7d"},
+    )
+    assert "scan_result" in result
+
+
+def test_strategy_threat_assess_activates():
+    """CompetitiveIntel threat_assess workflow runs through runtime."""
+    runtime = _runtime()
+    result = runtime.activate(
+        role_id="d2c_strategy",
+        operator_id="competitive_intel",
+        workflow_id="threat_assess",
+        input_data={"competitor": "Limitless", "move": "Price cut to $199"},
+    )
+    assert "threat_result" in result
