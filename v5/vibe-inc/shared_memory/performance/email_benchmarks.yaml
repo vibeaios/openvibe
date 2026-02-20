@@ -1,0 +1,55 @@
+# Email Marketing Benchmarks — Klaviyo
+# Source: Vibe Inc targets based on hardware DTC industry averages
+
+# Campaign benchmarks
+campaigns:
+  open_rate_target: 0.25       # 25% — above industry avg (20%)
+  click_rate_target: 0.035     # 3.5%
+  conversion_rate_target: 0.02 # 2%
+  revenue_per_email: 0.15      # $0.15 RPE
+  unsubscribe_rate_max: 0.003  # 0.3% max
+  spam_complaint_max: 0.001    # 0.1% max
+
+# Flow benchmarks
+flows:
+  welcome:
+    open_rate_target: 0.50     # Welcome emails get 50%+ open rates
+    click_rate_target: 0.10
+    conversion_rate_target: 0.05
+    revenue_per_recipient: 2.50
+  abandoned_cart:
+    open_rate_target: 0.45
+    click_rate_target: 0.12
+    recovery_rate_target: 0.10  # 10% cart recovery
+    revenue_per_recipient: 5.00
+  post_purchase:
+    open_rate_target: 0.60
+    click_rate_target: 0.08
+    review_rate_target: 0.05
+    repeat_purchase_rate: 0.15
+  winback:
+    open_rate_target: 0.20
+    click_rate_target: 0.03
+    reactivation_rate: 0.05
+
+# List health benchmarks
+list_health:
+  growth_rate_monthly: 0.03    # 3% monthly list growth
+  churn_rate_max: 0.02         # 2% max monthly churn
+  engagement_rate_min: 0.30    # 30% engaged in last 90 days
+  suppression_threshold_days: 180  # Suppress after 180 days inactive
+
+# Product-specific targets
+products:
+  bot:
+    welcome_flow_revenue: 3.50
+    abandoned_cart_recovery: 0.12
+    post_purchase_repeat: 0.20
+  dot:
+    welcome_flow_revenue: 2.50
+    abandoned_cart_recovery: 0.10
+    post_purchase_repeat: 0.15
+  board:
+    welcome_flow_revenue: 1.50
+    abandoned_cart_recovery: 0.08
+    post_purchase_repeat: 0.10

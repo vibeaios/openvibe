@@ -1,0 +1,49 @@
+# CRO Benchmarks — Conversion Rate Optimization
+# Source: Vibe Inc targets for hardware DTC
+
+# Funnel stage targets
+funnel:
+  session_to_pdp_view: 0.40    # 40% of sessions view a PDP
+  pdp_scroll_to_cta: 0.70      # 70% scroll to CTA (story engagement)
+  cta_click_rate: 0.02          # 2% CTA click rate
+  add_to_cart_rate: 0.08        # 8% add to cart
+  cart_to_checkout: 0.60        # 60% of carts start checkout
+  checkout_completion: 0.65     # 65% checkout completion
+  overall_cvr: 0.01             # 1% session-to-purchase CVR
+
+# A/B testing standards (Convert.com)
+experiments:
+  min_sample_size: 20000        # Per variant for reliable CVR
+  min_confidence: 0.95          # 95% statistical significance
+  min_test_duration_days: 14    # Minimum 2 weeks
+  max_test_duration_days: 42    # Maximum 6 weeks
+  max_concurrent_tests: 3       # Don't run too many overlapping
+
+# Landing page targets
+landing_pages:
+  bounce_rate_max: 0.40         # 40% max bounce rate
+  time_on_page_min_seconds: 45  # 45s minimum engagement
+  scroll_depth_target: 0.75     # 75% avg scroll depth
+  cta_visibility_rate: 0.80     # 80% see the CTA
+
+# Product-specific CVR targets
+products:
+  bot:
+    target_cvr: 0.012           # 1.2% — flagship product
+    target_aov: 299.0
+    target_revenue_per_visitor: 3.59
+  dot:
+    target_cvr: 0.015           # 1.5% — lower price point
+    target_aov: 199.0
+    target_revenue_per_visitor: 2.99
+  board:
+    target_cvr: 0.008           # 0.8% — higher consideration
+    target_aov: 499.0
+    target_revenue_per_visitor: 3.99
+
+# Discount impact limits
+discounts:
+  max_discount_pct: 0.15        # Never exceed 15% off
+  min_margin_after_discount: 0.40  # Maintain 40%+ margin
+  new_customer_discount_max: 0.10  # 10% max for acquisition
+  retention_discount_max: 0.15     # 15% max for retention
