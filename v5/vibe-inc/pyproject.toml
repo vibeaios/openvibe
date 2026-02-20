@@ -22,6 +22,8 @@ dependencies = [
     # Infrastructure
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0",
+    "typer>=0.12",
+    "rich>=13.0",
 ]
 
 [project.optional-dependencies]
@@ -36,3 +38,7 @@ packages = ["src/vibe_inc"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "live: requires real API credentials (skip with '-m not live')",
+    "live_agent: requires ANTHROPIC_API_KEY + API credentials (skip with '-m not live_agent')",
+]
