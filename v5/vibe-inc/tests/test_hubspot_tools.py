@@ -136,3 +136,29 @@ def test_hubspot_deal_update_patches_stage():
 
     assert result["updated"] is True
     assert result["deal"]["properties"]["dealstage"] == "mql"
+
+
+def test_hubspot_workflow_enroll_posts_enrollment():
+    """hubspot_workflow_enroll POSTs contact enrollment to workflow."""
+    from vibe_inc.tools.crm.hubspot import hubspot_workflow_enroll
+
+    mock_resp = _mock_response({})
+    mock_resp.status_code = 204
+
+    with patch("vibe_inc.tools.crm.hubspot.httpx") as mock_httpx, \
+         patch("vibe_inc.tools.crm.hubspot._get_headers", return_value={"Authorization": "Bearer test"}):
+        mock_httpx.post.return_value = mock_resp
+        result = hubspot_workflow_enroll(
+            contact_email="buyer@acme.com",
+            workflow_id="12345",
+        )
+
+    assert result["enrolled"] is True
+    assert result["workflow_id"] == "12345"
+
+
+def test_hubspot_workflow_enroll_has_docstring():
+    """Tool function must have a docstring for Anthropic schema generation."""
+    from vibe_inc.tools.crm.hubspot import hubspot_workflow_enroll
+    assert hubspot_workflow_enroll.__doc__ is not None
+    assert "HubSpot" in hubspot_workflow_enroll.__doc__

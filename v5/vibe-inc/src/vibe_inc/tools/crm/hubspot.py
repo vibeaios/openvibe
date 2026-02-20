@@ -185,3 +185,29 @@ def hubspot_deal_update(
     )
     data = resp.json()
     return {"updated": True, "deal": data}
+
+
+def hubspot_workflow_enroll(
+    contact_email: str,
+    workflow_id: str,
+) -> dict:
+    """Enroll a contact into a HubSpot workflow.
+
+    Args:
+        contact_email: Email of the contact to enroll.
+        workflow_id: HubSpot workflow (flow) ID to enroll the contact in.
+
+    Returns:
+        Dict with 'enrolled' bool, 'workflow_id', and 'contact_email'.
+    """
+    headers = _get_headers()
+    httpx.post(
+        f"{_BASE_URL}/automation/v4/flows/{workflow_id}/enrollments",
+        headers=headers,
+        json={"objectId": contact_email, "objectType": "CONTACT"},
+    )
+    return {
+        "enrolled": True,
+        "workflow_id": workflow_id,
+        "contact_email": contact_email,
+    }
