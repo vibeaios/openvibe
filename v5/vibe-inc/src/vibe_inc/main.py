@@ -36,6 +36,12 @@ from vibe_inc.roles.d2c_growth.workflows import (
     create_tiktok_daily_optimize_graph,
     create_tiktok_weekly_report_graph,
 )
+from vibe_inc.roles.d2c_growth.crm_workflows import (
+    create_deal_progression_graph,
+    create_enrichment_audit_graph,
+    create_pipeline_health_graph,
+    create_workflow_enrollment_graph,
+)
 from vibe_inc.roles.d2c_growth.cross_platform_workflows import (
     create_unified_cac_report_graph,
     create_budget_rebalance_graph,
@@ -119,6 +125,12 @@ def create_runtime(llm) -> RoleRuntime:
     runtime.register_workflow("cross_platform_ops", "unified_cac_report", create_unified_cac_report_graph)
     runtime.register_workflow("cross_platform_ops", "budget_rebalance", create_budget_rebalance_graph)
     runtime.register_workflow("cross_platform_ops", "platform_health_check", create_platform_health_check_graph)
+
+    # CRMOps workflows
+    runtime.register_workflow("crm_ops", "workflow_enrollment", create_workflow_enrollment_graph)
+    runtime.register_workflow("crm_ops", "deal_progression", create_deal_progression_graph)
+    runtime.register_workflow("crm_ops", "enrichment_audit", create_enrichment_audit_graph)
+    runtime.register_workflow("crm_ops", "pipeline_health", create_pipeline_health_graph)
 
     # CatalogOps workflows
     runtime.register_workflow("catalog_ops", "catalog_audit", create_catalog_audit_graph)

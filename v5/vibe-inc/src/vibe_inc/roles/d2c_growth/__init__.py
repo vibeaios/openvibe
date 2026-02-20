@@ -2,6 +2,7 @@
 from openvibe_sdk import Role
 
 from .amazon_ad_ops import AmazonAdOps
+from .crm_ops import CRMOps
 from .cro_ops import CROps
 from .cross_platform_ops import CrossPlatformOps
 from .email_ops import EmailOps
@@ -42,4 +43,5 @@ class D2CGrowth(Role):
         MetaAdOps, GoogleAdOps, AmazonAdOps, TikTokAdOps,
         LinkedInAdOps, PinterestAdOps, EmailOps, CROps,
         CrossPlatformOps,
+        CRMOps,
     ]
