@@ -85,3 +85,54 @@ def test_hubspot_deals_list_returns_deals():
 
     assert "deals" in result
     assert result["count"] == 2
+
+
+def test_hubspot_deal_create_posts_with_association():
+    """hubspot_deal_create creates deal and associates with contact."""
+    from vibe_inc.tools.crm.hubspot import hubspot_deal_create
+
+    mock_resp = _mock_response({
+        "id": "deal_new",
+        "properties": {
+            "dealname": "Acme Corp - Bot",
+            "dealstage": "lead",
+            "pipeline": "b2b",
+            "amount": "3000",
+        },
+    })
+
+    with patch("vibe_inc.tools.crm.hubspot.httpx") as mock_httpx, \
+         patch("vibe_inc.tools.crm.hubspot._get_headers", return_value={"Authorization": "Bearer test"}):
+        mock_httpx.post.return_value = mock_resp
+        result = hubspot_deal_create(
+            contact_id="501",
+            dealname="Acme Corp - Bot",
+            pipeline="b2b",
+            stage="lead",
+            amount=3000,
+        )
+
+    assert result["created"] is True
+    assert result["deal"]["id"] == "deal_new"
+    assert mock_httpx.post.call_count == 2  # create deal + create association
+
+
+def test_hubspot_deal_update_patches_stage():
+    """hubspot_deal_update PATCHes deal properties."""
+    from vibe_inc.tools.crm.hubspot import hubspot_deal_update
+
+    mock_resp = _mock_response({
+        "id": "deal_1",
+        "properties": {"dealstage": "mql"},
+    })
+
+    with patch("vibe_inc.tools.crm.hubspot.httpx") as mock_httpx, \
+         patch("vibe_inc.tools.crm.hubspot._get_headers", return_value={"Authorization": "Bearer test"}):
+        mock_httpx.patch.return_value = mock_resp
+        result = hubspot_deal_update(
+            deal_id="deal_1",
+            properties={"dealstage": "mql"},
+        )
+
+    assert result["updated"] is True
+    assert result["deal"]["properties"]["dealstage"] == "mql"

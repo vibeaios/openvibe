@@ -117,3 +117,71 @@ def hubspot_deals_list(
     )
     results = resp.json().get("results", [])
     return {"deals": results, "count": len(results)}
+
+
+def hubspot_deal_create(
+    contact_id: str,
+    dealname: str,
+    pipeline: str,
+    stage: str,
+    amount: float | None = None,
+) -> dict:
+    """Create a HubSpot deal and associate it with a contact.
+
+    Args:
+        contact_id: HubSpot contact ID to associate the deal with.
+        dealname: Name for the deal (e.g. 'Acme Corp - Bot').
+        pipeline: Pipeline ID (e.g. 'b2b').
+        stage: Deal stage (e.g. 'lead', 'mql', 'sql').
+        amount: Optional deal amount in dollars.
+
+    Returns:
+        Dict with 'created' bool and 'deal' with id and properties.
+    """
+    headers = _get_headers()
+    properties = {
+        "dealname": dealname,
+        "pipeline": pipeline,
+        "dealstage": stage,
+    }
+    if amount is not None:
+        properties["amount"] = str(amount)
+
+    resp = httpx.post(
+        f"{_BASE_URL}/crm/v3/objects/deals",
+        headers=headers,
+        json={"properties": properties},
+    )
+    deal = resp.json()
+
+    # Associate deal with contact
+    httpx.post(
+        f"{_BASE_URL}/crm/v3/objects/deals/{deal['id']}/associations/contacts/{contact_id}/deal_to_contact",
+        headers=headers,
+    )
+
+    return {"created": True, "deal": deal}
+
+
+def hubspot_deal_update(
+    deal_id: str,
+    properties: dict,
+) -> dict:
+    """Update a HubSpot deal's properties.
+
+    Args:
+        deal_id: HubSpot deal ID to update.
+        properties: Dict of property names to new values.
+            Common: dealstage, amount, closedate.
+
+    Returns:
+        Dict with 'updated' bool and 'deal' with updated properties.
+    """
+    headers = _get_headers()
+    resp = httpx.patch(
+        f"{_BASE_URL}/crm/v3/objects/deals/{deal_id}",
+        headers=headers,
+        json={"properties": properties},
+    )
+    data = resp.json()
+    return {"updated": True, "deal": data}
