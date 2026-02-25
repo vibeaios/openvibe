@@ -4,11 +4,6 @@ from unittest.mock import patch
 from openvibe_sdk.llm import LLMResponse
 
 
-MOCK_L1 = {"yesterday": [], "avg_7d": [], "avg_28d": [], "ad_spend": []}
-MOCK_L2 = {"yesterday": [], "avg_7d": [], "amazon": [], "worst_cpa_campaigns": []}
-MOCK_L3 = {"sessions_yesterday": [], "sessions_7d": [], "funnel_yesterday": [], "funnel_7d": []}
-
-
 class FakeLLM:
     def call(self, *, system, messages, **kwargs):
         return LLMResponse(content="All metrics healthy.")
