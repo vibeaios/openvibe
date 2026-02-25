@@ -5,6 +5,7 @@ from .amazon_ad_ops import AmazonAdOps
 from .crm_ops import CRMOps
 from .cro_ops import CROps
 from .cross_platform_ops import CrossPlatformOps
+from .daily_report_ops import DailyReportOps
 from .email_ops import EmailOps
 from .google_ad_ops import GoogleAdOps
 from .linkedin_ad_ops import LinkedInAdOps
@@ -44,4 +45,5 @@ class D2CGrowth(Role):
         LinkedInAdOps, PinterestAdOps, EmailOps, CROps,
         CrossPlatformOps,
         CRMOps,
+        DailyReportOps,
     ]
