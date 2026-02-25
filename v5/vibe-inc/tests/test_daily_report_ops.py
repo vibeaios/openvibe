@@ -94,13 +94,16 @@ def test_fetch_data_calls_all_three_layers():
 def test_fetch_data_passes_none_when_no_date():
     from vibe_inc.roles.d2c_growth.daily_report_ops import DailyReportOps
 
-    with patch("vibe_inc.roles.d2c_growth.daily_report_ops.fetch_l1", return_value=MOCK_L1), \
-         patch("vibe_inc.roles.d2c_growth.daily_report_ops.fetch_l2", return_value=MOCK_L2), \
-         patch("vibe_inc.roles.d2c_growth.daily_report_ops.fetch_l3", return_value=MOCK_L3):
+    with patch("vibe_inc.roles.d2c_growth.daily_report_ops.fetch_l1", return_value=MOCK_L1) as m1, \
+         patch("vibe_inc.roles.d2c_growth.daily_report_ops.fetch_l2", return_value=MOCK_L2) as m2, \
+         patch("vibe_inc.roles.d2c_growth.daily_report_ops.fetch_l3", return_value=MOCK_L3) as m3:
         llm = FakeAgentLLM([])
         op = DailyReportOps(llm=llm)
         result = op.fetch_data({})
 
+    m1.assert_called_once_with(None)
+    m2.assert_called_once_with(None)
+    m3.assert_called_once_with(None)
     assert "l1_data" in result
     assert "l2_data" in result
     assert "l3_data" in result
