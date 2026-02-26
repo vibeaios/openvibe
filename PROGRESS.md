@@ -257,6 +257,30 @@ GitHub launch → HN "Show HN" post → building-in-public content → developer
 - Phase 2: Contributors, templates submitted, companies using
 - Phase 3: Hosted signups, conversion rate, revenue
 
+## Strategic Deep Dive (2026-02-25)
+
+Five parallel research agents investigated core strategic assumptions. Results saved in `memory/strategy.md`.
+
+**Key assumption corrections:**
+- Model companies ARE moving into orchestration (OpenAI Frontier, Anthropic Cowork). The "separate orchestration layer" thesis needs reframing.
+- Big tech CAN connect cross-platform (1,400+ connectors). They WON'T go deep on cross-vendor domain intelligence. Moat = domain depth, not connection.
+- "OS for X" winners all started with a narrow wedge (Stripe = 7 lines, Shopify = snowboard shop). None declared "OS" on day one.
+
+**Framework: Bet Sequence (not destination picking)**
+- In Perez Frenzy phase, design a sequence of bets: each affordable, valuable standalone, informative, compounding.
+- Bet 1: Dogfood daily report (30 days) → Bet 2: 3-5 workflows live → Bet 3: Package for others (3 paths: open source / hardware upsell / education vertical) → Bet 4: Revenue → Bet 5: Platform ecosystem
+- ~2 years to credible platform (consistent with Stripe/Twilio/Shopify historical data)
+
+**Hardware+AI vertical analysis:**
+- K-12 Private Schools = strongest sub-vertical for hardware+AI structural change (AI co-teacher that sees Board + hears classroom)
+- Healthcare = pass for now (HIPAA burden, AI scribe market already crowded)
+- Hardware advantage: gives AI agents physical presence (eyes/ears/canvas) that pure-software competitors can't match
+
+**Production gap assessment:**
+- Architecture is solid. Production-hardening needed: auth, database, error handling, logging, deployment infra, async.
+- Estimates: dogfood 1 workflow = 2-3 weeks, open source = 4-6 weeks, hosted platform = 3-5 months
+- "Building agent = 20% effort. Production-ready = 80%." (AWS DevOps Agent team)
+
 ## Not Yet Done
 
 - **D2C Content** — D2C design has 3 roles; Growth + Strategy built, Content remaining
@@ -288,4 +312,4 @@ When ready to onboard the team (each person/group owns a role), need to address:
 
 ---
 
-*Updated: 2026-02-25 — Daily Growth Report complete (DailyReportOps, 12th operator). Redshift data catalog + funnel benchmarks incorporated.*
+*Updated: 2026-02-25 — Strategic deep dive: 5 research agents, bet sequence framework, assumption corrections, industry analysis. See memory/strategy.md.*
